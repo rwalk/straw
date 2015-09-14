@@ -1,9 +1,9 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 # install java and zookeeper
-sudo apt-get update
-sudo apt-get install -y default-jre
-sudo apt-get install -y zookeeperd
+apt-get update
+apt-get install -y default-jre
+apt-get install -y zookeeperd
 
 # install kafka
 mkdir -p ~/Downloads
