@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #
-#   Configure services on the straw/ec2 instances
+#   Configure Kafka on ec2 instances
 #
 
 import boto3, os
@@ -26,8 +26,13 @@ if __name__=="__main__":
     if len(hosts) != len(private_ips):
         raise(ArgumentError("Host and private ips not consistent!"))
 
+
+    #######################################################################
+    #   ZOOKEEPER
+    ####################################################################### 
     # just a little hacking to inject some settings into the templates
     # TODO: parallelize this to save some boot time
+    print("Starting zookeeper configuration...")
     zooid = 1
     for h in hosts:
         cmd_str = []
@@ -63,4 +68,46 @@ if __name__=="__main__":
         if res!=0:
             raise(ArgumentError("Something went wrong executing {0}  Got exit: {1}".format(cmd, res)))        
 
+    #######################################################################
+    #   Kafka
+    #######################################################################
+    print("Starting kafka configuration...")
+    broker_id = 0
+    kafka_start_script = "templates/kafka-server-start.sh"
+    for h in hosts:
+        cmd_str = []
+        with open("templates/kafka.server.properties.tmp", "w") as tmpfile:
+            with open("templates/kafka.server.properties","r") as f:
+                # copy over the template
+                for l in f:
+                    tmpfile.write(l)
 
+                # add zookeeper info
+                host_strings= ["{0}:2181".format(private_ips[i]) for i in range(len(hosts))]
+                tmpfile.write("zookeeper.connect={0}\n".format(",".join(host_strings)))
+                
+                # set broker id
+                tmpfile.write("broker.id={0}\n".format(broker_id))
+                broker_id+=1
+                
+                # add commands to queue
+                cmd_str.append("scp -i {0} {1} ubuntu@{2}:server.properties".format(keyfile, tmpfile.name, h))
+                cmd_str.append("ssh -i {0} ubuntu@{1} sudo mv server.properties /usr/local/kafka/config/server.properties".format(keyfile, h))
+                cmd_str.append("scp -i {0} {1} ubuntu@{2}:kafka-server-start.sh".format(keyfile, kafka_start_script, h))
+                cmd_str.append("ssh -i {0} ubuntu@{1} sudo mv kafka-server-start.sh /usr/local/kafka/bin/kafka-server-start.sh ".format(keyfile, h))
+
+        # execute the remote commands
+        for cmd in cmd_str:
+            print(cmd)
+            res=os.system(cmd)
+            if res!=0:
+                raise(ArgumentError("Something went wrong executing {0}  Got exit: {1}".format(cmd, res)))
+
+    # start each kafka
+    cmd_str = ["ssh -i {0} ubuntu@{1} \"nohup sudo /usr/local/kafka/bin/kafka-server-start.sh  /usr/local/kafka/config/server.properties < /dev/null > std.out 2> std.err &\"".format(keyfile, h) for h in hosts]
+
+    for cmd in cmd_str:
+        print(cmd)
+        res=os.system(cmd)
+        if res!=0:
+            raise(ArgumentError("Something went wrong executing {0}  Got exit: {1}".format(cmd, res)))     
