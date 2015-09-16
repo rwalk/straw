@@ -9,7 +9,7 @@ from time import sleep
 
 # configuration
 keyfile = "/home/ryan/projects/insight/accounts/rwalker.pem"
-my_instances_filters = [{ 'Name': 'instance-state-name', 'Values': ['running']}, {'Name':'tag-value', 'Values':['rwalker-node']}]
+my_instances_filters = [{ 'Name': 'instance-state-name', 'Values': ['running']}, {'Name':'tag-value', 'Values':['rwalker-kafka-node']}]
 
 if __name__=="__main__":
     
