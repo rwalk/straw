@@ -9,7 +9,7 @@ from time import sleep
 
 # configuration
 keyfile = "/home/ryan/projects/insight/accounts/rwalker.pem"
-my_instances_filters = [{ 'Name': 'instance-state-name', 'Values': ['running']}, {'Name':'tag-value', 'Values':['rwalker-node']}]
+my_instances_filters = [{ 'Name': 'instance-state-name', 'Values': ['running']}, {'Name':'tag-value', 'Values':['rwalker-storm-node']}]
 
 if __name__=="__main__":
     
@@ -71,33 +71,52 @@ if __name__=="__main__":
             raise(RuntimeError("Something went wrong executing {0}  Got exit: {1}".format(cmd, res)))        
 
     #######################################################################
-    #   Kafka
+    #   Storm
     #######################################################################
-    print("Starting kafka configuration...")
-    broker_id = 0
-    kafka_start_script = "templates/kafka-server-start.sh"
+    print("Starting Storm configuration...")
     for h in hosts:
         cmd_str = []
-        with open("templates/kafka.server.properties.tmp", "w") as tmpfile:
-            with open("templates/kafka.server.properties","r") as f:
+        with open("templates/storm.yaml.tmp", "w") as tmpfile:
+            with open("templates/storm.yaml.tmp","r") as f:
                 # copy over the template
                 for l in f:
                     tmpfile.write(l)
 
                 # add zookeeper info
-                host_strings= ["{0}:2181".format(private_ips[i]) for i in range(len(hosts))]
-                tmpfile.write("zookeeper.connect={0}\n".format(",".join(host_strings)))
-                
-                # set broker id
-                tmpfile.write("broker.id={0}\n".format(broker_id))
-                broker_id+=1
-                
-                # add commands to queue
-                cmd_str.append("scp -i {0} {1} ubuntu@{2}:server.properties".format(keyfile, tmpfile.name, h))
-                cmd_str.append("ssh -i {0} ubuntu@{1} sudo mv server.properties /usr/local/kafka/config/server.properties".format(keyfile, h))
-                cmd_str.append("scp -i {0} {1} ubuntu@{2}:kafka-server-start.sh".format(keyfile, kafka_start_script, h))
-                cmd_str.append("ssh -i {0} ubuntu@{1} sudo mv kafka-server-start.sh /usr/local/kafka/bin/kafka-server-start.sh ".format(keyfile, h))
+                tmpfile.write("storm.zookeeper.servers:\n")               
+                host_strings= ["    - \"{0}\"\n".format(private_ips[i]) for i in range(len(hosts))]
+                for v in host_strings:
+                    tmpfile.write(v)
 
+                # declare the master             
+                tmpfile.write("nimbus.host: \"{0}\"\n".format(private_ips[0]))
+                
+                # path to stateful info
+                tmpfile.write("storm.local.dir: \"/usr/local/storm/local_state\"\n")
+
+                # supervisor info
+                # supervisor.slots.ports:
+                #    - 6700
+                #    - 6701
+                #   etc..
+                tmpfile.write("supervisor.slots.ports:\n")
+                tmpfile.write("".join(["    -{0}\n".format([6700 + i for i in range(len(hosts))])]))
+
+        # add commands to queue
+        cmd_str.append("scp -i {0} {1} ubuntu@{2}:storm.yaml".format(keyfile, tmpfile.name, h))
+        cmd_str.append("ssh -i {0} ubuntu@{1} sudo mv storm.yaml /usr/local/storm/conf/storm.yaml".format(keyfile, h))
+
+        def quiet_wrap(cmd):
+            return(" ".join(["nohup",cmd, "< /dev/null > std.out 2> std.err &"]))
+            
+        if h==hosts[0]:
+            # start nimbus
+            cmd_str.append("ssh -i {0} ubuntu@{1} \"{2}\"".format(keyfile, h, quiet_wrap("sudo /usr/local/storm/bin/storm nimbus")))
+            # web ui
+            cmd_str.append("ssh -i {0} ubuntu@{1} \"{2}\"".format(keyfile, h, quiet_wrap("sudo /usr/local/storm/bin/storm ui")))
+        else:
+            cmd_str.append("ssh -i {0} ubuntu@{1} \"{2}\"".format(keyfile, h, quiet_wrap("sudo /usr/local/storm/bin/storm supervisor")))
+        
         # execute the remote commands
         for cmd in cmd_str:
             print(cmd)
@@ -105,11 +124,10 @@ if __name__=="__main__":
             if res!=0:
                 raise(RuntimeError("Something went wrong executing {0}  Got exit: {1}".format(cmd, res)))
 
-    # start each kafka
-    cmd_str = ["ssh -i {0} ubuntu@{1} \"nohup sudo /usr/local/kafka/bin/kafka-server-start.sh  /usr/local/kafka/config/server.properties < /dev/null > std.out 2> std.err &\"".format(keyfile, h) for h in hosts]
+    # print some info
+    # TODO: retag master and open its 8080 port. 
+    print("Master: {0}".format(hosts[0]))
+    print("\n".join(["Worker: "+ h for h in hosts[1:]]))    
 
-    for cmd in cmd_str:
-        print(cmd)
-        res=os.system(cmd)
-        if res!=0:
-            raise(RuntimeError("Something went wrong executing {0}  Got exit: {1}".format(cmd, res)))     
+
+

@@ -9,25 +9,43 @@ import boto3, os, argparse
 from botocore.exceptions import ClientError as BotoClientError
 from time import sleep
 
-# CONFIG SETTINGS
-# TODO: read from file
+#############################
+# CONFIG
+#############################
+
+# access info
 keyfile = "/home/ryan/projects/insight/accounts/rwalker.pem"
-initfile = "base_kafka_image_config.sh"
-elasticsearch_initfile = "elasticsearch.sh"
-tag_prefix = "rwalker-"
-vpc_cidr = "10.0.0.0/27"
-subnet_cidr = "10.0.0.0/27"         # we have just one subnet right now
-kafka_instances=4                 
-elasticsearch_instances=1
-base_aws_image = 'ami-5189a661'
 pemkey = 'rwalker'
 
+# since it's a shared account, add this unique prefix to all tags
+tag_prefix = "rwalker-"
+
+# network settings -- only single subnet right now
+vpc_cidr = "10.0.0.0/27"
+subnet_cidr = "10.0.0.0/27"
+
+# node settings
+kafka_instances=4                 
+elasticsearch_instances=1
+storm_instances=4
+
+# initializtion files
+kafka_initfile = "kafka_install.sh"
+elasticsearch_initfile = "elasticsearch_install.sh"
+storm_initfile = "storm_install.sh"
+
+# base AWS settings
+base_aws_image = 'ami-5189a661'
+
+
+###############################
+# helper methods
 def get_tag(name):
     # all service tags will be prefixed with the "tag_prefix" value
     return (tag_prefix + name)
 
 
-
+###############################
 if __name__=="__main__":
 
     # argument help
@@ -148,7 +166,7 @@ if __name__=="__main__":
         #
         #   EC2 Instances
         #
-        shellcodefile=os.path.abspath(initfile)
+        shellcodefile=os.path.abspath(kafka_initfile)
         shellfile = open(shellcodefile,'r').read()
         pemfile =os.path.abspath(keyfile)
         instances = ec2.create_instances(
@@ -176,9 +194,10 @@ if __name__=="__main__":
         #########################################
         #   ELASTICSEARCH CLUSTER
         #########################################
-
+        print("Creating an Elasticsearch cluster...")
         #   
         #   Create a security group for elasticsearch
+        #   world access to 9200, should modify for production
         #
         sgid = None
         tag = get_tag('elasticsearch-security-group')
@@ -249,3 +268,34 @@ if __name__=="__main__":
         for v in instances:
             v.create_tags(Tags=[{'Key':'Name', 'Value':get_tag(tag)}])
             print("SERVICE: {0:<15}\tID: {1:<15}\tIP: {2:<15}\tDNS: {3:<15}".format(tag, v.instance_id, v.public_ip_address, v.public_dns_name))
+
+    if args.service.lower() in ['all', 'storm']:
+        #########################################
+        #   STORM CLUSTER
+        #########################################
+        print("Creating a Storm cluster...")
+        #
+        #   EC2 Instances
+        #
+        shellcodefile=os.path.abspath(storm_initfile)
+        shellfile = open(shellcodefile,'r').read()
+        pemfile =os.path.abspath(keyfile)
+        instances = ec2.create_instances(
+            MinCount=storm_instances,
+            MaxCount=storm_instances,
+            UserData=shellfile,
+            KeyName=pemkey,
+            ImageId=base_aws_image,
+            InstanceType='m4.large',
+            NetworkInterfaces=[{'SubnetId': subnet.id, 'DeviceIndex':0, 'Groups':[security_group.id], 'AssociatePublicIpAddress':True}]
+        )
+
+        # tag instances and assign a public ip
+        tag='storm-node'
+        print("Sleep 60 seconds to give instances time to configure...")
+        sleep(60)
+        for v in instances:
+            v.create_tags(Tags=[{'Key':'Name', 'Value':get_tag(tag)}])
+            print("SERVICE: {0:<15}\tID: {1:<15}\tIP: {2:<15}\tDNS: {3:<15}".format(tag, v.instance_id, v.public_ip_address, v.public_dns_name))
+
+
