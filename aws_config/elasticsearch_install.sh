@@ -28,9 +28,11 @@ echo "deb http://packages.elastic.co/elasticsearch/1.7/debian stable main" | tee
 ### Install Elasticsearch
 apt-get update && sudo apt-get install elasticsearch -y
 
-### start elasticsearch:
-service elasticsearch start
+### node discovery plugin for AWS
+/usr/share/elasticsearch/bin/plugin install elasticsearch/elasticsearch-cloud-aws/2.5.0
 
+### start elasticsearch:
+# service elasticsearch start
 ### To test:
 # curl <IP>:9200
 

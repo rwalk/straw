@@ -6,7 +6,6 @@
 #
 #
 import boto3, os, argparse
-from botocore.exceptions import ClientError as BotoClientError
 from time import sleep
 
 #############################
@@ -37,6 +36,8 @@ storm_initfile = "storm_install.sh"
 # base AWS settings
 base_aws_image = 'ami-5189a661'
 
+# services
+services = ['kafka', 'elasticsearch', 'storm']
 
 ###############################
 # helper methods
@@ -55,7 +56,7 @@ if __name__=="__main__":
 
     # boto3 api: we oddly seem to need both ec2 resource and client
     ec2 = boto3.resource('ec2')
-    client= boto3.client('ec2')
+
 
     ############################################################
     #
