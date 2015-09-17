@@ -29,9 +29,10 @@ elasticsearch_instances=1
 storm_instances=4
 
 # initializtion files
-kafka_initfile = "kafka_install.sh"
-elasticsearch_initfile = "elasticsearch_install.sh"
-storm_initfile = "storm_install.sh"
+path = "host_install_scripts"
+kafka_initfile = os.path.join(path, "kafka_install.sh")
+elasticsearch_initfile = os.path.join(path, "elasticsearch_install.sh")
+storm_initfile = os.path.join(path, "storm_install.sh")
 
 # base AWS settings
 base_aws_image = 'ami-5189a661'

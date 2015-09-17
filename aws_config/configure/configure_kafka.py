@@ -76,7 +76,7 @@ if __name__=="__main__":
     print("Starting kafka configuration...")
     broker_id = 0
     kafka_start_script = "templates/kafka-server-start.sh"
-    for h in hosts:
+    for i,h in enumerate(hosts):
         cmd_str = []
         with open("templates/kafka.server.properties.tmp", "w") as tmpfile:
             with open("templates/kafka.server.properties","r") as f:
@@ -84,6 +84,9 @@ if __name__=="__main__":
                 for l in f:
                     tmpfile.write(l)
 
+                # advertise host's private IP
+                # tmpfile.write("advertised.host.name: {0}\n".format(h))
+                
                 # add zookeeper info
                 host_strings= ["{0}:2181".format(private_ips[i]) for i in range(len(hosts))]
                 tmpfile.write("zookeeper.connect={0}\n".format(",".join(host_strings)))
