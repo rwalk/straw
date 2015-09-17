@@ -3,17 +3,26 @@ package bolts;
 import java.util.HashMap;
 import java.util.Map;
 
+
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.BasicOutputCollector;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Tuple;
 
+import static org.elasticsearch.node.NodeBuilder.*;
+import org.elasticsearch.node.Node;
+import org.elasticsearch.client.Client;
+
 public class WordCounter extends BaseBasicBolt {
 
 	Integer id;
 	String name;
 	Map<String, Integer> counters;
+	Node node;
+	Client elasticsearch_client;
+	
+
 
 	/**
 	 * At the end of the spout (when the cluster is shutdown
@@ -35,6 +44,8 @@ public class WordCounter extends BaseBasicBolt {
 		this.counters = new HashMap<String, Integer>();
 		this.name = context.getThisComponentId();
 		this.id = context.getThisTaskId();
+		this.node = nodeBuilder().clusterName("yourclustername").node();
+		Client client = this.node.client();
 	}
 
 	@Override

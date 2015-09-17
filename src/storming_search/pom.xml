@@ -31,6 +31,17 @@
             <url>http://clojars.org/repo</url>
         </repository>
 
+        <!-- Repository where we can find the elasticsearch dependencies  -->
+        <repository>
+            <id>central</id>
+            <name>Maven Repository Switchboard</name>
+            <layout>default</layout>
+            <url>http://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+
   </repositories>
 
   <dependencies>
@@ -40,6 +51,13 @@
           <groupId>storm</groupId>
           <artifactId>storm</artifactId>
           <version>0.7.1</version>
+       </dependency>
+
+        <!-- Elasticsearch Dependency -->
+        <dependency>
+          <groupId>org.elasticsearch</groupId>
+          <artifactId>elasticsearch</artifactId>
+          <version>1.7.0</version>
        </dependency>
 
   </dependencies>
