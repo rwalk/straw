@@ -49,10 +49,10 @@ public class StreamingSearchTopology {
     TopologyBuilder builder = new TopologyBuilder();
 
     builder.setSpout("streaming-search-spout", new StreamingSearchSpout(), 1);
-    builder.setBolt("streaming-search-bolt", new StreamingSearchBolt(), 3).shuffleGrouping("streamfeed");
+    builder.setBolt("streaming-search-bolt", new StreamingSearchBolt(), 3).shuffleGrouping("streaming-search-spout");
 
     Config conf = new Config();
-    conf.put("stream_file", "/usr/share/dict/american-english");
+    conf.put("stream_file", "/usr/share/dict/words");
     if (args != null && args.length > 0) {
       conf.setNumWorkers(3);
       StormSubmitter.submitTopologyWithProgressBar(args[0], conf, builder.createTopology());
