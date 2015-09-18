@@ -48,7 +48,7 @@ public class SearchTopology {
   public static void main(String[] args) throws Exception {
     TopologyBuilder builder = new TopologyBuilder();
 
-    builder.setSpout("streamfeed", new StreamFeedSpout(), 10);
+    builder.setSpout("streamfeed", new StreamFeedSpout(), 1);
     builder.setBolt("search", new SearchBolt(), 3).shuffleGrouping("streamfeed");
 
     Config conf = new Config();
@@ -60,6 +60,8 @@ public class SearchTopology {
     else {
       LocalCluster cluster = new LocalCluster();
       cluster.submitTopology("search-topology", conf, builder.createTopology());
+      
+      // run for a while then die
       Utils.sleep(5000);
       cluster.killTopology("search-topology");
       cluster.shutdown();

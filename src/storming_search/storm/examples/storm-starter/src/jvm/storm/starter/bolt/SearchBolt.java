@@ -35,8 +35,6 @@ import java.util.Map;
  */
 public class SearchBolt extends BaseRichBolt {
 
-  //Mapping of key->upstreamBolt->count
-  private Map<Object, Map<Integer, Long>> counts = new HashMap<Object, Map<Integer, Long>>();
   private OutputCollector collector;
 
   @SuppressWarnings("rawtypes")
