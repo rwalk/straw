@@ -33,8 +33,8 @@ import backtype.storm.utils.Utils;
 import java.util.Map;
 
 import storm.kafka.*;
-import storm.starter.bolt.SearchBolt;
-import storm.starter.spout.StreamFeedSpout;
+import storm.starter.bolt.StreamingSearchBolt;
+import storm.starter.spout.StreamingSearchSpout;
 
 import org.elasticsearch.*;
 
@@ -43,13 +43,13 @@ import org.elasticsearch.*;
  * https://github.com/buildlackey/cep/tree/master/storm%2Bkafka
  * 
  */
-public class SearchTopology {
+public class StreamingSearchTopology {
 
   public static void main(String[] args) throws Exception {
     TopologyBuilder builder = new TopologyBuilder();
 
-    builder.setSpout("streamfeed", new StreamFeedSpout(), 1);
-    builder.setBolt("search", new SearchBolt(), 3).shuffleGrouping("streamfeed");
+    builder.setSpout("streaming-search-spout", new StreamingSearchSpout(), 1);
+    builder.setBolt("streaming-search-bolt", new StreamingSearchBolt(), 3).shuffleGrouping("streamfeed");
 
     Config conf = new Config();
     conf.put("stream_file", "/usr/share/dict/american-english");
@@ -59,11 +59,11 @@ public class SearchTopology {
     }
     else {
       LocalCluster cluster = new LocalCluster();
-      cluster.submitTopology("search-topology", conf, builder.createTopology());
+      cluster.submitTopology("streaming-search-topology", conf, builder.createTopology());
       
       // run for a while then die
       Utils.sleep(5000);
-      cluster.killTopology("search-topology");
+      cluster.killTopology("streaming-search-topology");
       cluster.shutdown();
     }
   }

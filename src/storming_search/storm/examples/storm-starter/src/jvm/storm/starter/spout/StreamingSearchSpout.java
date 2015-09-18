@@ -31,7 +31,7 @@ import java.io.FileReader;
 import java.util.Map;
 import java.util.Random;
 
-public class StreamFeedSpout extends BaseRichSpout {
+public class StreamingSearchSpout extends BaseRichSpout {
   SpoutOutputCollector collector;
   private FileReader fileReader;
   private boolean completed = false;

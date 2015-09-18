@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * This bolt aggregates counts from multiple upstream bolts.
  */
-public class SearchBolt extends BaseRichBolt {
+public class StreamingSearchBolt extends BaseRichBolt {
 
   private OutputCollector collector;
 
