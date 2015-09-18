@@ -39,12 +39,12 @@
       <version>1.7.0</version>
    </dependency>
 
+
 	<dependency>
 	  <groupId>storm</groupId>
 	  <artifactId>storm-kafka</artifactId>
 	  <version>0.9.0-wip16a-scala292</version>
-	</dependency>
-	
+	</dependency>	
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -105,10 +105,33 @@
       <artifactId>commons-collections</artifactId>
       <version>3.2.1</version>
     </dependency>
+
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-    </dependency>
+   </dependency>
+
+
+<dependency>
+  <groupId>org.apache.httpcomponents</groupId>
+  <artifactId>httpclient</artifactId>
+  <version>4.5.1</version>
+</dependency>
+<dependency>
+  <groupId>org.apache.httpcomponents</groupId>
+  <artifactId>httpclient-cache</artifactId>
+  <version>4.5.1</version>
+</dependency>
+<dependency>
+  <groupId>org.apache.httpcomponents</groupId>
+  <artifactId>httpmime</artifactId>
+  <version>4.5.1</version>
+</dependency>
+<dependency>
+  <groupId>org.apache.httpcomponents</groupId>
+  <artifactId>fluent-hc</artifactId>
+  <version>4.5.1</version>
+</dependency>
   </dependencies>
 
   <build>
@@ -203,6 +226,17 @@
         <repository>
             <id>clojars.org</id>
             <url>http://clojars.org/repo</url>
+        </repository>
+
+        <repository>
+            <id>mvnrepo</id>
+            <name>mvnrepo</name>
+            <url>http://mvnrepository.com</url>
+        </repository>
+        <repository>
+            <id>mvnrepo2</id>
+            <name>mvnrepo2</name>
+            <url>http://repo1.maven.org/maven2/</url>
         </repository>
 
   </repositories>
