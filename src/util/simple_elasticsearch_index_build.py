@@ -1,5 +1,13 @@
 #!/usr/bin/python3
-
+#   This script is a simple introduction to the python elasticsearch API. 
+#
+#   This script will populate an elasticsearch index from a file and then give a simple command line query interface.
+#   Each line of the input file will be mapped into a JSON document of the form { "text": "my file line..." } and added
+#   to the index. 
+#
+#   You can use Docker to spin up a local elasticsearch instance to play around with, e.g.
+#   docker run --name elasticsearch -d -p 9200:9200 elasticsearch:latest
+#
 import argparse, elasticsearch, json
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
