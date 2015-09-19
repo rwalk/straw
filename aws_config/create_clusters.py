@@ -33,12 +33,13 @@ path = "host_install_scripts"
 kafka_initfile = os.path.join(path, "kafka_install.sh")
 elasticsearch_initfile = os.path.join(path, "elasticsearch_install.sh")
 storm_initfile = os.path.join(path, "storm_install.sh")
+flask_initfile = os.path.join(path, "flask_install.sh")
 
 # base AWS settings
 base_aws_image = 'ami-5189a661'
 
 # services
-services = ['kafka', 'elasticsearch', 'storm']
+services = ['kafka', 'elasticsearch', 'storm', 'flask']
 
 ###############################
 # helper methods
@@ -52,10 +53,10 @@ if __name__=="__main__":
 
     # argument help
     parser = argparse.ArgumentParser(description='Launch AWS EC2 instances for the straw cluster.')
-    parser.add_argument('service', help='Name of service to start. Specify \'all\' to launch all services.')
+    parser.add_argument('service', help='Name of service to start one of {0}. Specify \'all\' to launch all services.'.format(services))
     args = parser.parse_args()
 
-    # boto3 api: we oddly seem to need both ec2 resource and client
+    # boto3 api
     ec2 = boto3.resource('ec2')
 
 
@@ -300,4 +301,32 @@ if __name__=="__main__":
             v.create_tags(Tags=[{'Key':'Name', 'Value':get_tag(tag)}])
             print("SERVICE: {0:<15}\tID: {1:<15}\tIP: {2:<15}\tDNS: {3:<15}".format(tag, v.instance_id, v.public_ip_address, v.public_dns_name))
 
+    if args.service.lower() in ['all', 'flask']:
+        #########################################
+        #   flask webserver
+        #########################################
+        print("Creating Flask webserver...")
+        #
+        #   EC2 Instances
+        #
+        shellcodefile=os.path.abspath(flask_initfile)
+        shellfile = open(shellcodefile,'r').read()
+        pemfile =os.path.abspath(keyfile)
+        instances = ec2.create_instances(
+            MinCount=1,
+            MaxCount=1,
+            UserData=shellfile,
+            KeyName=pemkey,
+            ImageId=base_aws_image,
+            InstanceType='t2.micro',
+            NetworkInterfaces=[{'SubnetId': subnet.id, 'DeviceIndex':0, 'Groups':[security_group.id], 'AssociatePublicIpAddress':True}]
+        )
+
+        # tag instances and assign a public ip
+        tag='flask-node'
+        print("Sleep 60 seconds to give instances time to configure...")
+        sleep(60)
+        for v in instances:
+            v.create_tags(Tags=[{'Key':'Name', 'Value':get_tag(tag)}])
+            print("SERVICE: {0:<15}\tID: {1:<15}\tIP: {2:<15}\tDNS: {3:<15}".format(tag, v.instance_id, v.public_ip_address, v.public_dns_name))
 
