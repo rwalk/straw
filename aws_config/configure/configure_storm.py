@@ -2,10 +2,10 @@
 #
 #   Configure Kafka on ec2 instances
 #
-
 import boto3, os
 from botocore.exceptions import ClientError as BotoClientError
 from time import sleep
+from config_utils import quiet_wrap
 
 # configuration
 keyfile = "/home/ryan/projects/insight/accounts/rwalker.pem"
@@ -105,9 +105,6 @@ if __name__=="__main__":
         # add commands to queue
         cmd_str.append("scp -i {0} {1} ubuntu@{2}:storm.yaml".format(keyfile, tmpfile.name, h))
         cmd_str.append("ssh -i {0} ubuntu@{1} sudo mv storm.yaml /usr/local/storm/conf/storm.yaml".format(keyfile, h))
-
-        def quiet_wrap(cmd):
-            return(" ".join(["nohup",cmd, "< /dev/null > std.out 2> std.err &"]))
             
         if h==hosts[0]:
             # start nimbus
