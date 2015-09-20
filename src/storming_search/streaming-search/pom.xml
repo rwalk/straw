@@ -17,39 +17,23 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.apache.storm</groupId>
-    <artifactId>storm-starter</artifactId>
+    <groupId>github.com.rwalk333</groupId>
+    <artifactId>storming-search</artifactId>
     <packaging>jar</packaging>
     <version>0.0.1</version>
-    <name>storm-starter</name>
+    <name>storming-search</name>
     <dependencies>
-        <!-- Elasticsearch Dependency -->
+        <!-- Elasticsearch -->
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
             <version>1.7.0</version>
         </dependency>
+        <!-- Kafka connector -->
         <dependency>
             <groupId>storm</groupId>
             <artifactId>storm-kafka</artifactId>
             <version>0.9.0-wip16a-scala292</version>
-        </dependency>
-        <dependency>
-            <groupId>org.easytesting</groupId>
-            <artifactId>fest-assert-core</artifactId>
-            <version>2.0M8</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jmock</groupId>
-            <artifactId>jmock</artifactId>
-            <version>2.6.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.twitter4j</groupId>
-            <artifactId>twitter4j-stream</artifactId>
-            <version>3.0.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.storm</groupId>
@@ -63,6 +47,7 @@
             <artifactId>commons-collections</artifactId>
             <version>3.2.1</version>
         </dependency>
+        <!-- http client -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
