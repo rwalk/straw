@@ -62,7 +62,7 @@ public class StreamingSearchTopology {
       cluster.submitTopology("streaming-search-topology", conf, builder.createTopology());
       
       // run for a while then die
-      Utils.sleep(2000);
+      Utils.sleep(5000);
       cluster.killTopology("streaming-search-topology");
       cluster.shutdown();
     }
