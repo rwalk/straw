@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package storm.starter.bolt;
+package straw.storm.bolt;
 
 import backtype.storm.Config;
 import backtype.storm.task.OutputCollector;
@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import java.util.HashMap;
 import java.util.Map;
 import java.io.IOException;
+
 // http client library
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -94,13 +95,13 @@ import org.apache.http.util.EntityUtils;
 public class StreamingSearchBolt extends BaseRichBolt {
 
   private OutputCollector collector;
+  private Map conf;
 
-  
-  
   @SuppressWarnings("rawtypes")
   @Override
-  public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
-    this.collector = collector;
+  public void prepare(Map conf, TopologyContext context, OutputCollector collector) {
+	  this.conf = conf;
+	  this.collector = collector;
   }
 
   @Override

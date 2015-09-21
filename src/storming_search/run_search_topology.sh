@@ -1,2 +1,4 @@
 #!/bin/bash
-mvn compile exec:java -Dstorm.topology=storm.starter.StreamingSearchTopology
+export STRAW_CONFIG=`pwd`/config/config.properties
+echo "USING CONFIG FILE: $STRAW_CONFIG"
+mvn compile exec:java -Dstorm.topology=straw.storm.StreamingSearchTopology

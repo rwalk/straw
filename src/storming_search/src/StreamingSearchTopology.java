@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package storm.starter;
+package straw.storm;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
@@ -33,10 +33,18 @@ import backtype.storm.utils.Utils;
 import java.util.Map;
 
 import storm.kafka.*;
-import storm.starter.bolt.StreamingSearchBolt;
-import storm.starter.spout.StreamingSearchSpout;
-
+import straw.storm.bolt.StreamingSearchBolt;
+import straw.storm.spout.StreamingSearchSpout;
+import straw.storm.util.ConfigurationManager;
 import org.elasticsearch.*;
+
+// configuration
+import java.io.FileNotFoundException;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
+import java.util.Properties;
 
 /**
  * This is a basic example of a Storm topology, following the example
@@ -51,15 +59,18 @@ public class StreamingSearchTopology {
     builder.setSpout("streaming-search-spout", new StreamingSearchSpout(), 1);
     builder.setBolt("streaming-search-bolt", new StreamingSearchBolt(), 3).shuffleGrouping("streaming-search-spout");
 
-    Config conf = new Config();
-    conf.put("stream_file", "/usr/share/dict/words");
+    // configuration
+    ConfigurationManager config_manager = new ConfigurationManager();
+    config_manager.put("stream_file", "example_file");
+    Config config = config_manager.get();
+    
     if (args != null && args.length > 0) {
-      conf.setNumWorkers(3);
-      StormSubmitter.submitTopologyWithProgressBar(args[0], conf, builder.createTopology());
+      config.setNumWorkers(3);
+      StormSubmitter.submitTopologyWithProgressBar(args[0], config, builder.createTopology());
     }
     else {
       LocalCluster cluster = new LocalCluster();
-      cluster.submitTopology("streaming-search-topology", conf, builder.createTopology());
+      cluster.submitTopology("streaming-search-topology", config, builder.createTopology());
       
       // run for a while then die
       Utils.sleep(5000);
