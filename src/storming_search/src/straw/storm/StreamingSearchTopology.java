@@ -57,13 +57,15 @@ public class StreamingSearchTopology {
     TopologyBuilder builder = new TopologyBuilder();
 
     builder.setSpout("streaming-search-spout", new StreamingSearchSpout(), 1);
-    builder.setBolt("streaming-search-bolt", new StreamingSearchBolt(), 3).shuffleGrouping("streaming-search-spout");
+    builder.setBolt("streaming-search-bolt", new StreamingSearchBolt(), 1).shuffleGrouping("streaming-search-spout");
 
     // configuration
     ConfigurationManager config_manager = new ConfigurationManager();
     config_manager.put("stream_file", "example_file");
     config_manager.put("elasticsearch_host", "elasticsearch_host");
     config_manager.put("elasticsearch_port", "elasticsearch_port");
+    config_manager.put("index_name", "index_name");
+    config_manager.put("document_type", "document_type");
     Config config = config_manager.get();
     
     if (args != null && args.length > 0) {
@@ -75,7 +77,7 @@ public class StreamingSearchTopology {
       cluster.submitTopology("streaming-search-topology", config, builder.createTopology());
       
       // run for a while then die
-      Utils.sleep(5000);
+      Utils.sleep(20000);
       cluster.killTopology("streaming-search-topology");
       cluster.shutdown();
     }
