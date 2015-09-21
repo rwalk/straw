@@ -35,7 +35,7 @@ import java.util.Map;
 import storm.kafka.*;
 import straw.storm.bolt.StreamingSearchBolt;
 import straw.storm.spout.StreamingSearchSpout;
-import straw.storm.util.ConfigurationManager;
+import util.ConfigurationManager;
 import org.elasticsearch.*;
 
 // configuration
@@ -62,6 +62,8 @@ public class StreamingSearchTopology {
     // configuration
     ConfigurationManager config_manager = new ConfigurationManager();
     config_manager.put("stream_file", "example_file");
+    config_manager.put("elasticsearch_host", "elasticsearch_host");
+    config_manager.put("elasticsearch_port", "elasticsearch_port");
     Config config = config_manager.get();
     
     if (args != null && args.length > 0) {

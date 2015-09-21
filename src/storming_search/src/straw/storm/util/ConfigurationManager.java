@@ -1,3 +1,4 @@
+
 /*
  * 
  * This class is a simple wrapper around the storm configuration object.

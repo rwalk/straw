@@ -25,6 +25,7 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
@@ -88,6 +89,11 @@ import org.apache.http.message.LineParser;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.CharArrayBuffer;
 import org.apache.http.util.EntityUtils;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import static org.elasticsearch.index.query.QueryBuilders.*;
+import static org.elasticsearch.index.query.FilterBuilders.*;
+
 
 /**
  * This bolt aggregates counts from multiple upstream bolts.
@@ -96,12 +102,19 @@ public class StreamingSearchBolt extends BaseRichBolt {
 
   private OutputCollector collector;
   private Map conf;
+  private TransportClient client;
 
   @SuppressWarnings("rawtypes")
   @Override
   public void prepare(Map conf, TopologyContext context, OutputCollector collector) {
 	  this.conf = conf;
 	  this.collector = collector;
+	  
+	  // prepare the search engine
+	  String host = conf.get("elasticsearch_host").toString();
+	  int port = Integer.parseInt(conf.get("elasticsearch_port").toString());
+	  client = new TransportClient()
+			  .addTransportAddress(new InetSocketTransportAddress(host, port));
   }
 
   @Override
