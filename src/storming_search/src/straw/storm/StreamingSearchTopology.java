@@ -35,7 +35,7 @@ import java.util.Map;
 import storm.kafka.*;
 import straw.storm.bolt.StreamingSearchBolt;
 import straw.storm.spout.StreamingSearchSpout;
-import util.ConfigurationManager;
+import straw.storm.util.ConfigurationManager;
 import org.elasticsearch.*;
 
 // configuration
