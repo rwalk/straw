@@ -2,8 +2,8 @@
 #
 #   Configure Kafka on ec2 instances
 #
-
-import boto3, os
+import boto3, os, sys
+sys.path.append("..")
 from botocore.exceptions import ClientError as BotoClientError
 from time import sleep
 from create_clusters import get_tag
@@ -52,7 +52,8 @@ if __name__=="__main__":
             tmpfile.write("cloud.aws.secret_key: {0}\n".format(profile['aws_secret_access_key']))
             tmpfile.write("cloud.aws.region: {0}\n".format(profile['region']))
             tmpfile.write("discovery.type: ec2\n")
-            tmpfile.write("discovery.ec2.groups: ssh_all\n")
+            tmpfile.write("discovery.ec2.groups: {0}\n".format(get_tag('elasticsearch-security-group')))
+            #tmpfile.write("discovery.ec2.host_type: public_ip\n")
             tmpfile.write("cluster.name: {0}\n".format(get_tag('elasticsearch-cluster')))
 
     # build the command queue

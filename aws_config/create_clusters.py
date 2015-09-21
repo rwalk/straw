@@ -25,7 +25,7 @@ subnet_cidr = "10.0.0.0/27"
 
 # node settings
 kafka_instances=4                 
-elasticsearch_instances=1
+elasticsearch_instances=3
 storm_instances=4
 
 # initializtion files
