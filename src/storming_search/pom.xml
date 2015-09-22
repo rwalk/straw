@@ -40,8 +40,8 @@
       <artifactId>kafka_2.10</artifactId>
       <version>0.8.2.1</version>
       <!-- use provided scope, if users need to pull in whichever scala version they choose -->
-      <!-- scope>provided</scope> -->
-      <exclusions>
+      <!-- scope provided scope --> 
+    <exclusions>
         <exclusion>
           <groupId>org.apache.zookeeper</groupId>
           <artifactId>zookeeper</artifactId>
@@ -56,13 +56,13 @@
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
       <version>0.8.2.1</version>
-      <!--<scope>provided</scope>>
+      <!-- scope provided scope -->
     </dependency>
         <dependency>
             <groupId>org.apache.storm</groupId>
             <artifactId>storm-core</artifactId>
             <version>0.9.3</version>
-            <!-- keep storm out of the jar-with-dependencies -->
+            <!-- keep storm outdd of the jar-with-dependencies -->
             <scope>provided</scope>
         </dependency>
         <dependency>
