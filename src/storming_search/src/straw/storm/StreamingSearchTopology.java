@@ -20,6 +20,7 @@ package straw.storm;
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
+import backtype.storm.spout.SchemeAsMultiScheme;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.testing.TestWordSpout;
@@ -30,12 +31,15 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
+
 import java.util.Map;
 
 import storm.kafka.*;
-import straw.storm.bolt.StreamingSearchBolt;
-import straw.storm.spout.StreamingSearchSpout;
+import straw.storm.bolt.SearchBolt;
+import straw.storm.spout.DocumentSpout;
+import straw.storm.spout.QuerySpout;
 import straw.storm.util.ConfigurationManager;
+
 import org.elasticsearch.*;
 
 // configuration
@@ -43,7 +47,9 @@ import java.io.FileNotFoundException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -54,11 +60,7 @@ import java.util.Properties;
 public class StreamingSearchTopology {
 
   public static void main(String[] args) throws Exception {
-    TopologyBuilder builder = new TopologyBuilder();
-
-    builder.setSpout("streaming-search-spout", new StreamingSearchSpout(), 1);
-    builder.setBolt("streaming-search-bolt", new StreamingSearchBolt(), 1).shuffleGrouping("streaming-search-spout");
-
+	  
     // configuration
     ConfigurationManager config_manager = new ConfigurationManager();
     config_manager.put("stream_file", "example_file");
@@ -66,8 +68,36 @@ public class StreamingSearchTopology {
     config_manager.put("elasticsearch_port", "elasticsearch_port");
     config_manager.put("index_name", "index_name");
     config_manager.put("document_type", "document_type");
+    config_manager.put("kafka_query_topic", "kafka_query_topic");
+    config_manager.put("kafka_document_topic", "kafka_document_topic");
+    config_manager.put("zookeeper_hosts", "zookeeper_hosts");
     Config config = config_manager.get();
     
+    // Kafka spout configuration
+    String zkroot = "/brokers"; // the root path in Zookeeper for the spout to store the consumer offsets
+    String zkid = "straw"; // an id for this consumer for storing the consumer offsets in Zookeeper
+    BrokerHosts brokerHosts = new ZkHosts("localhost:2181", zkroot);
+    
+    // kafka topics
+    String query_topic = config.get("kafka_query_topic").toString();
+    String document_topic = config.get("kafka_document_topic").toString();
+    SpoutConfig query_spout_config = new SpoutConfig(brokerHosts, query_topic, zkroot, zkid);
+    query_spout_config.forceFromStart=true;
+    SpoutConfig document_spout_config = new SpoutConfig(brokerHosts, document_topic, zkroot, zkid);
+    document_spout_config.forceFromStart=true;
+    
+    // add a string scheme to the spouts
+    document_spout_config.scheme = new SchemeAsMultiScheme(new StringScheme());
+    
+    // topology definition
+    TopologyBuilder builder = new TopologyBuilder();
+    builder.setSpout("document-spout", new KafkaSpout(document_spout_config), 1);
+    //builder.setSpout("query-spout", new KafkaSpout(query_spout_config), 1);
+    builder.setBolt("search-bolt", new SearchBolt(), 1)
+    	.shuffleGrouping("document-spout");
+    	//.allGrouping("query-spout");
+    
+    // topology submission
     if (args != null && args.length > 0) {
       config.setNumWorkers(3);
       StormSubmitter.submitTopologyWithProgressBar(args[0], config, builder.createTopology());
@@ -77,9 +107,10 @@ public class StreamingSearchTopology {
       cluster.submitTopology("streaming-search-topology", config, builder.createTopology());
       
       // run for a while then die
-      Utils.sleep(20000);
+      Utils.sleep(2000000);
       cluster.killTopology("streaming-search-topology");
       cluster.shutdown();
+      
     }
   }
 }

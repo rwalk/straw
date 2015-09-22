@@ -30,15 +30,38 @@
             <version>1.7.0</version>
         </dependency>
         <!-- Kafka connector -->
-        <dependency>
-            <groupId>storm</groupId>
-            <artifactId>storm-kafka</artifactId>
-            <version>0.9.0-wip16a-scala292</version>
-        </dependency>
+		<dependency>
+			<groupId>org.apache.storm</groupId>
+			<artifactId>storm-kafka</artifactId>
+			<version>0.9.2-incubating</version>
+		</dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka_2.10</artifactId>
+      <version>0.8.2.1</version>
+      <!-- use provided scope, so users can pull in whichever scala version they choose -->
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.zookeeper</groupId>
+          <artifactId>zookeeper</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+      <version>0.8.2.1</version>
+      <scope>provided</scope>
+    </dependency>
         <dependency>
             <groupId>org.apache.storm</groupId>
             <artifactId>storm-core</artifactId>
-            <version>0.9.5</version>
+            <version>0.9.3</version>
             <!-- keep storm out of the jar-with-dependencies -->
             <scope>provided</scope>
         </dependency>
@@ -68,6 +91,11 @@
             <artifactId>fluent-hc</artifactId>
             <version>4.5.1</version>
         </dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20141113</version>
+		</dependency>
     </dependencies>
     <build>
         <sourceDirectory>src</sourceDirectory>

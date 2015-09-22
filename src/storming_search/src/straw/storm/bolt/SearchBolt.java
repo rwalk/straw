@@ -106,7 +106,7 @@ import static org.elasticsearch.common.xcontent.XContentFactory.*;
 /**
  * This bolt aggregates counts from multiple upstream bolts.
  */
-public class StreamingSearchBolt extends BaseRichBolt {
+public class SearchBolt extends BaseRichBolt {
 
   private OutputCollector collector;
   private Map conf;
@@ -126,13 +126,32 @@ public class StreamingSearchBolt extends BaseRichBolt {
 			  .addTransportAddress(new InetSocketTransportAddress(host, port));
 
 	  // add queries to the list
-	  queries.add(termsQuery("text", "Justin","Bieber").minimumMatch(2));
-	  queries.add(termsQuery("text", "facebook","acquires").minimumMatch(2));
-	  queries.add(termsQuery("text", "google","acquires").minimumMatch(2));
-	  queries.add(termsQuery("text", "free","money").minimumMatch(2));
-	  queries.add(termsQuery("text", "legion","doom").minimumMatch(2));
-	  queries.add(termsQuery("text", "zebra","xylaphone","ham","coffee","toast","legume").minimumMatch(1));
-	  
+
+
+  }
+
+  @Override
+  public void execute(Tuple tuple) {
+    String kind = tuple.toString();
+    System.out.println("Hi!");
+    System.out.println(kind);
+    
+    
+    // either we get a query and we need to add it to the index
+    // or we get a document and we need to do a search
+    // Values("query", request_id, user_id, query_id, query)
+    // Values("document", source, document)
+    if(kind.equalsIgnoreCase("query")){
+      String query;
+      query = tuple.getString(4);
+       
+  	  queries.add(termsQuery("text", "Justin","Bieber").minimumMatch(2));
+  	  //queries.add(termsQuery("text", "facebook","acquires").minimumMatch(2));
+  	  //queries.add(termsQuery("text", "google","acquires").minimumMatch(2));
+  	  //queries.add(termsQuery("text", "free","money").minimumMatch(2));
+  	  //queries.add(termsQuery("text", "legion","doom").minimumMatch(2));
+  	  //queries.add(termsQuery("text", "zebra","xylaphone","ham","coffee","toast","legume").minimumMatch(1));
+ 
 	  //register the queries in the percolator
 	  for(int i=0; i<queries.size(); i++ ) {
 		  try {
@@ -151,12 +170,21 @@ public class StreamingSearchBolt extends BaseRichBolt {
 			e.printStackTrace();
 		}
 	  }
-  }
-
-  @Override
-  public void execute(Tuple tuple) {
-    String kind = tuple.getString(0);
-    String document = tuple.getString(1);
+  	  
+  	  
+  	  
+  	  
+    }
+    
+    
+    
+    if (2==1){ 
+    String document = tuple.toString();
+    
+    
+    
+    
+    
     
     //Build a document to check against the percolator
     XContentBuilder docBuilder = null;
@@ -181,15 +209,14 @@ public class StreamingSearchBolt extends BaseRichBolt {
     for(PercolateResponse.Match match : response) {
         //Handle the result which is the name of
         //the query in the percolator
-    	System.out.println("Found a match for: " + document);
-    	System.out.println("Query: " + match);
+    	System.out.println("Query: " + match.getId() + " matched document " + document);
     }
     
     // emit results
     if(kind.equals("document")){
     	collector.emit(new Values(document));
     }
-    
+    }
     // acknowledge 
     collector.ack(tuple);
   }

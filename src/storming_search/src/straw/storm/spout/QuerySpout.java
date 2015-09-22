@@ -28,27 +28,26 @@ import backtype.storm.utils.Utils;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.security.MessageDigest;
 import java.util.Map;
 import java.util.Random;
 
 import org.json.JSONObject;
 
+import straw.storm.util.RequestsHelper;
 
-public class DocumentSpout extends BaseRichSpout {
+
+public class QuerySpout extends BaseRichSpout {
   SpoutOutputCollector collector;
   private FileReader fileReader;
-  private boolean completed = false;
-  private Map conf;
-
 
   @Override
   public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
     try {
-    	this.fileReader = new FileReader(conf.get("document_file").toString());
+    	this.fileReader = new FileReader(conf.get("query_file").toString());
     } catch (FileNotFoundException e) {
-    	throw new RuntimeException("Error reading file "+conf.get("stream_file"));
+    	throw new RuntimeException("Error reading file "+conf.get("query_file"));
     }
-    this.conf = conf;
     this.collector = collector;
   }
 
@@ -56,34 +55,26 @@ public class DocumentSpout extends BaseRichSpout {
   public void nextTuple() {
 	  
 	// put some slack in the pipeline for initial development
-    Utils.sleep(200);
-    String str, msg;
-    
-    // once the file is done reading, we just start over again
-    if(completed){
-        try {
-        	this.fileReader = new FileReader(conf.get("stream_file").toString());
-        } catch (FileNotFoundException e) {
-        	throw new RuntimeException("Error reading file "+conf.get("stream_file"));
-        }
-        completed = false;
-    }
+    Utils.sleep(1000);
+    String str, query, user_id, query_id, request_id;
     
     // buffered read from the file
     BufferedReader reader = new BufferedReader(fileReader);
     try {
     	while((str=reader.readLine())!= null) {
-    		
     		JSONObject obj = new JSONObject(str);
-    		msg = obj.getString("text");
-    		if( msg != null){
-    			this.collector.emit(new Values("document", msg));
-    		}
+    		query = obj.getString("query");
+    		user_id = obj.getString("user");
+    		request_id = RequestsHelper.generate_unique_identifier(str);
+    		query_id = RequestsHelper.generate_unique_identifier(query);
+    		
+			if( query != null){
+				this.collector.emit(new Values("query", request_id, user_id, query_id, query));
+			}
+			
     	}
     } catch(Exception e) {
-    	throw new RuntimeException("Error reading tuple.", e);
-    } finally {
-    	completed = true;
+    	throw new RuntimeException("Error reading query.", e);
     }
   }
 
@@ -97,7 +88,7 @@ public class DocumentSpout extends BaseRichSpout {
 
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    declarer.declare(new Fields("kind","value"));
+	  declarer.declare(new Fields("kind","request_id", "user_id", "query_id", "query"));
   }
 
 }
