@@ -31,7 +31,7 @@ if __name__=="__main__":
     parser.add_argument("file", help="A file of data, one datum per line")
     parser.add_argument("host", help="Public IP address of a Kafka node")
     parser.add_argument("topic", help="Kafka topic to feed")
-    parser.add_argument("-p", "--port", default="9092", help="Public IP address of a Kafka node, default 9092")
+    parser.add_argument("-p", "--port", default=9092, help="port for zookeeper, default 9092")
     parser.add_argument("-c", "--chunksize", default=10, help="Number of messages to send at one time,  default 10")    
     args = parser.parse_args()
 
