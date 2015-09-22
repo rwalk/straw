@@ -1,3 +1,5 @@
 #!/bin/bash
-/usr/local/storm/bin/storm jar streaming-search/target/storming-search-0.0.1.jar straw.storm.StreamingSearchTopology "prod-topology"
+export STRAW_CONFIG=`pwd`/config/config.properties
+echo "USING CONFIG FILE: $STRAW_CONFIG"
+/usr/local/storm/bin/storm jar target/storming-search-0.0.1.jar straw.storm.StreamingSearchTopology "prod-topology"
 
