@@ -10,6 +10,6 @@ kafka:
     - zookeeper:zk
   environment:
     KAFKA_CREATE_TOPICS: "queries:1:1,documents:1:1"
-    KAFKA_ADVERTISED_HOST_NAME: "10.0.0.244"
+    KAFKA_ADVERTISED_HOST_NAME: "192.168.0.89"
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock

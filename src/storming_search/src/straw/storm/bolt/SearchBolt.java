@@ -151,6 +151,7 @@ public class SearchBolt extends BaseRichBolt {
 					.setSource(jsonBuilder()
 							.startObject()
 							.field("query", query) // Register the query
+							.field("format", "objects")
 							.endObject())
 							.setRefresh(true) // Needed when the query shall be available immediately
 							.execute().actionGet();
@@ -167,19 +168,33 @@ public class SearchBolt extends BaseRichBolt {
 		}
 		else if (sourcename.toLowerCase().contains("document")){
 			// try to parse as document
-			XContentBuilder docBuilder = PercolatorHelper.make_document(data);
-
+			String text = PercolatorHelper.extract_text(data);
+		
+			//Build a document to check against the percolator
+		    XContentBuilder docBuilder = null;
+			if (text != null){
+				try {
+					docBuilder = XContentFactory.jsonBuilder().startObject();
+				    docBuilder.field("doc").startObject(); //This is needed to designate the document
+				    docBuilder.field("text", text);
+				    docBuilder.endObject(); //End of the doc field
+				    docBuilder.endObject(); //End of the JSON root object
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+				
 			if (docBuilder != null) {
-				//Percolate
-				PercolateResponse response = client.preparePercolate()
-						.setIndices(conf.get("index_name").toString())
-						.setDocumentType(conf.get("document_type").toString())
-						.setSource(docBuilder).execute().actionGet();
+			//Percolate
+			PercolateResponse response = client.preparePercolate()
+					.setIndices(conf.get("index_name").toString())
+					.setDocumentType(conf.get("document_type").toString())
+					.setSource(docBuilder).execute().actionGet();
 
 				//Handle the result which is the set of queries in the percolator
 				for(PercolateResponse.Match match : response) {
-					System.out.println("Query: " + match.getId() + " matched document " + data);
-					
+					System.out.println("Query: " + match.getId().toString() + " matched document " + text);
 					// emit results
 					collector.emit(new Values(data));
 				}

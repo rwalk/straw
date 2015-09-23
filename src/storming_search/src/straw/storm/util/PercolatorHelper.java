@@ -12,34 +12,21 @@ import org.json.JSONObject;
 
 public class PercolatorHelper {
 
-	public static XContentBuilder make_document(String data) {
+	public static String extract_text(String data) {
 		// parse input JSON
-		// JSONObject obj = null;
-		String text = data.replace("{", "").replace("}", "");
-//		try {
-//			obj = new JSONObject(data);
-//			text = obj.getString("text");	
-//		} 
-//		catch (org.json.JSONException e) {
-//			System.out.println("JSON PARSER FAILED TO HANDLE: " + data);
-//			//e.printStackTrace();
-//		}
-		
-		//Build a document to check against the percolator
-	    XContentBuilder docBuilder = null;
-		if (text != null){
-			try {
-				docBuilder = XContentFactory.jsonBuilder().startObject();
-			    docBuilder.field("doc").startObject(); //This is needed to designate the document
-			    docBuilder.field("text", text);
-			    docBuilder.endObject(); //End of the doc field
-			    docBuilder.endObject(); //End of the JSON root object
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		JSONObject obj = null;
+		String text = null;
+		try {
+			obj = new JSONObject(data);
+			text = obj.getString("text");	
+		} 
+		catch (org.json.JSONException e) {
+			// TODO: Bad json passed
+			// System.out.println("JSON PARSER FAILED TO HANDLE: " + data);
+			//e.printStackTrace();
 		}
-		return docBuilder;
+		
+		return text;
 	}
 	
 	public static QueryBuilder make_query(String data){
