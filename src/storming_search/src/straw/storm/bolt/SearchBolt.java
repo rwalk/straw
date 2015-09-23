@@ -98,6 +98,8 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
 
+import straw.storm.util.PercolatorHelper;
+import straw.storm.util.RequestsHelper;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 import static org.elasticsearch.index.query.FilterBuilders.*;
 import static org.elasticsearch.common.xcontent.XContentFactory.*;
@@ -108,121 +110,96 @@ import static org.elasticsearch.common.xcontent.XContentFactory.*;
  */
 public class SearchBolt extends BaseRichBolt {
 
-  private OutputCollector collector;
-  private Map conf;
-  private TransportClient client;
-  private ArrayList<QueryBuilder> queries = new ArrayList<QueryBuilder>();
-    
-  @SuppressWarnings("rawtypes")
-  @Override
-  public void prepare(Map conf, TopologyContext context, OutputCollector collector) {
-	  this.conf = conf;
-	  this.collector = collector;
-	  
-	  // prepare the search engine
-	  String host = conf.get("elasticsearch_host").toString();
-	  int port = Integer.parseInt(conf.get("elasticsearch_port").toString());	  
-	  client = new TransportClient()
-			  .addTransportAddress(new InetSocketTransportAddress(host, port));
+	private OutputCollector collector;
+	private Map conf;
+	private TransportClient client;
 
-	  // add queries to the list
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void prepare(Map conf, TopologyContext context, OutputCollector collector) {
+		this.conf = conf;
+		this.collector = collector;
 
-
-  }
-
-  @Override
-  public void execute(Tuple tuple) {
-    String kind = tuple.toString();
-    System.out.println("Hi!");
-    System.out.println(kind);
-    
-    
-    // either we get a query and we need to add it to the index
-    // or we get a document and we need to do a search
-    // Values("query", request_id, user_id, query_id, query)
-    // Values("document", source, document)
-    if(kind.equalsIgnoreCase("query")){
-      String query;
-      query = tuple.getString(4);
-       
-  	  queries.add(termsQuery("text", "Justin","Bieber").minimumMatch(2));
-  	  //queries.add(termsQuery("text", "facebook","acquires").minimumMatch(2));
-  	  //queries.add(termsQuery("text", "google","acquires").minimumMatch(2));
-  	  //queries.add(termsQuery("text", "free","money").minimumMatch(2));
-  	  //queries.add(termsQuery("text", "legion","doom").minimumMatch(2));
-  	  //queries.add(termsQuery("text", "zebra","xylaphone","ham","coffee","toast","legume").minimumMatch(1));
- 
-	  //register the queries in the percolator
-	  for(int i=0; i<queries.size(); i++ ) {
-		  try {
-			client.prepareIndex(conf.get("index_name").toString(), ".percolator", "q"+Integer.toString(i))
-			      .setSource(jsonBuilder()
-			          .startObject()
-			              .field("query", queries.get(i)) // Register the query
-			          .endObject())
-			      .setRefresh(true) // Needed when the query shall be available immediately
-			      .execute().actionGet();
-		} catch (ElasticsearchException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	  }
-  	  
-  	  
-  	  
-  	  
-    }
-    
-    
-    
-    if (2==1){ 
-    String document = tuple.toString();
-    
-    
-    
-    
-    
-    
-    //Build a document to check against the percolator
-    XContentBuilder docBuilder = null;
-	try {
-		docBuilder = XContentFactory.jsonBuilder().startObject();
-	    docBuilder.field("doc").startObject(); //This is needed to designate the document
-	    docBuilder.field("text", document);
-	    docBuilder.endObject(); //End of the doc field
-	    docBuilder.endObject(); //End of the JSON root object
-	} catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+		// prepare the search engine
+		String host = conf.get("elasticsearch_host").toString();
+		int port = Integer.parseInt(conf.get("elasticsearch_port").toString());	  
+		client = new TransportClient()
+		.addTransportAddress(new InetSocketTransportAddress(host, port));
 	}
 
-    //Percolate
-    PercolateResponse response = client.preparePercolate()
-                            .setIndices(conf.get("index_name").toString())
-                            .setDocumentType(conf.get("document_type").toString())
-                            .setSource(docBuilder).execute().actionGet();
-    
-    //Iterate over the results
-    for(PercolateResponse.Match match : response) {
-        //Handle the result which is the name of
-        //the query in the percolator
-    	System.out.println("Query: " + match.getId() + " matched document " + document);
-    }
-    
-    // emit results
-    if(kind.equals("document")){
-    	collector.emit(new Values(document));
-    }
-    }
-    // acknowledge 
-    collector.ack(tuple);
-  }
+	@Override
+	public void execute(Tuple tuple) {
 
-  @Override
-  public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    declarer.declare(new Fields("document"));
-  }
+		// process the tuple recieved from kafka
+		String sourcename = tuple.getSourceComponent();
+		String data = tuple.getValue(0).toString();
+
+
+		// either we get a query and we need to add it to the index
+		// or we get a document and we need to do a search
+		// Values("query", request_id, user_id, query_id, query)
+		// Values("document", source, document)
+		if(sourcename.toLowerCase().contains("query")){
+			System.out.println(data);
+			// add queries
+			QueryBuilder query = PercolatorHelper.make_query(data);
+
+			//register the query in the percolator
+			if (query != null ) {
+				try {
+					client.prepareIndex(conf.get("index_name").toString(), ".percolator", RequestsHelper.generate_unique_identifier(data))
+					.setSource(jsonBuilder()
+							.startObject()
+							.field("query", query) // Register the query
+							.endObject())
+							.setRefresh(true) // Needed when the query shall be available immediately
+							.execute().actionGet();
+				} catch (ElasticsearchException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				System.out.println("QUERY: " + query.toString());
+			}
+		}
+		else if (sourcename.toLowerCase().contains("document")){
+			// try to parse as document
+			XContentBuilder docBuilder = PercolatorHelper.make_document(data);
+
+			if (docBuilder != null) {
+				//Percolate
+				PercolateResponse response = client.preparePercolate()
+						.setIndices(conf.get("index_name").toString())
+						.setDocumentType(conf.get("document_type").toString())
+						.setSource(docBuilder).execute().actionGet();
+
+				//Handle the result which is the set of queries in the percolator
+				for(PercolateResponse.Match match : response) {
+					System.out.println("Query: " + match.getId() + " matched document " + data);
+					
+					// emit results
+					collector.emit(new Values(data));
+				}
+			}
+		}
+
+		// acknowledge 
+		collector.ack(tuple);
+	}
+
+
+	@Override
+	public void declareOutputFields(OutputFieldsDeclarer declarer) {
+		declarer.declare(new Fields("document"));
+	}
+
+	@Override
+	public void cleanup() {
+		client.close();
+	}
+
+
 }

@@ -1,0 +1,4 @@
+{ "type": "terms-query", "terms": [ "coffee", "toast"], "minimum-match": 1 }
+{ "type": "terms-query", "terms": ["Keith Richards"], "minimum-match": 1 }
+{ "type": "terms-query", "terms": [ "justin", "beiber"], "minimum-match": 2}
+{ "type": "terms-query", "terms": ["bonsai","tree"], "minimum-match": 1}
