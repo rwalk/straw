@@ -80,6 +80,9 @@ public class StreamingSearchTopology {
     config_manager.put("kafka_query_topic", "kafka_query_topic");
     config_manager.put("kafka_document_topic", "kafka_document_topic");
     config_manager.put("zookeeper_hosts", "zookeeper_hosts");
+    config_manager.put("redis_host", "redis_host");
+    config_manager.put("redis_port", "redis_port");
+    
     Config config = config_manager.get();
     
     /*

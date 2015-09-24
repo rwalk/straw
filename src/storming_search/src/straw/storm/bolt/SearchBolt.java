@@ -116,7 +116,7 @@ public class SearchBolt extends BaseRichBolt {
 	private OutputCollector collector;
 	private Map conf;
 	private TransportClient client;
-	private static JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost");
+	private static JedisPool pool; 
 	private Jedis jedis_client;
 	
 	@SuppressWarnings("rawtypes")
@@ -124,6 +124,7 @@ public class SearchBolt extends BaseRichBolt {
 	public void prepare(Map conf, TopologyContext context, OutputCollector collector) {
 		this.conf = conf;
 		this.collector = collector;
+		SearchBolt.pool = new JedisPool(new JedisPoolConfig(), conf.get("redis_host").toString());
 		this.jedis_client = pool.getResource();
 		// prepare the search engine
 		String host = conf.get("elasticsearch_host").toString();
