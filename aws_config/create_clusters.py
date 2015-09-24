@@ -200,7 +200,7 @@ if __name__=="__main__":
         print("Creating an Elasticsearch cluster...")
         #   
         #   Create a security group for elasticsearch
-        #   world access to 9200, should modify for production
+        #   world access to 9200,9300 should modify for production
         #
         sgid = None
         tag = get_tag('elasticsearch-security-group')
@@ -236,6 +236,16 @@ if __name__=="__main__":
                     'IpProtocol': 'tcp',
                     'FromPort': 9200,
                     'ToPort': 9200,
+                    'IpRanges': [
+                        {
+                            'CidrIp': '0.0.0.0/0'
+                        }
+                    ]
+                },
+                {
+                    'IpProtocol': 'tcp',
+                    'FromPort': 9300,
+                    'ToPort': 9300,
                     'IpRanges': [
                         {
                             'CidrIp': '0.0.0.0/0'
