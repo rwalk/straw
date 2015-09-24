@@ -98,6 +98,9 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
 
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 import straw.storm.util.PercolatorHelper;
 import straw.storm.util.RequestsHelper;
 import static org.elasticsearch.index.query.QueryBuilders.*;
@@ -113,18 +116,22 @@ public class SearchBolt extends BaseRichBolt {
 	private OutputCollector collector;
 	private Map conf;
 	private TransportClient client;
-
+	private static JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost");
+	private Jedis jedis_client;
+	
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void prepare(Map conf, TopologyContext context, OutputCollector collector) {
 		this.conf = conf;
 		this.collector = collector;
-
+		this.jedis_client = pool.getResource();
 		// prepare the search engine
 		String host = conf.get("elasticsearch_host").toString();
 		int port = Integer.parseInt(conf.get("elasticsearch_port").toString());	  
 		client = new TransportClient()
 		.addTransportAddress(new InetSocketTransportAddress(host, port));
+		
+		// prepare the redis client
 	}
 
 	@Override
@@ -197,6 +204,7 @@ public class SearchBolt extends BaseRichBolt {
 					System.out.println("Query: " + match.getId().toString() + " matched document " + text);
 					// emit results
 					collector.emit(new Values(data));
+					jedis_client.publish(match.getId().toString(), text);					
 				}
 			}
 		}
@@ -214,6 +222,7 @@ public class SearchBolt extends BaseRichBolt {
 	@Override
 	public void cleanup() {
 		client.close();
+		pool.destroy();
 	}
 
 
