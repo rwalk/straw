@@ -17,7 +17,26 @@
  */
 package straw.storm.bolt;
 
-import backtype.storm.Config;
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+
+import java.io.IOException;
+import java.util.Map;
+
+import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.action.percolate.PercolateResponse;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.index.query.QueryBuilder;
+
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+import straw.storm.util.PercolatorHelper;
+import straw.storm.util.RequestsHelper;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -25,88 +44,6 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-
-import org.apache.log4j.Logger;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.io.IOException;
-
-// http client library
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.*;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.Consts;
-import org.apache.http.Header;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.ParseException;
-import org.apache.http.client.CookieStore;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.config.AuthSchemes;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.config.ConnectionConfig;
-import org.apache.http.config.MessageConstraints;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.config.SocketConfig;
-import org.apache.http.conn.DnsResolver;
-import org.apache.http.conn.HttpConnectionFactory;
-import org.apache.http.conn.ManagedHttpClientConnection;
-import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.DefaultHttpResponseFactory;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.DefaultHttpResponseParser;
-import org.apache.http.impl.conn.DefaultHttpResponseParserFactory;
-import org.apache.http.impl.conn.ManagedHttpClientConnectionFactory;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.impl.conn.SystemDefaultDnsResolver;
-import org.apache.http.impl.io.DefaultHttpRequestWriterFactory;
-import org.apache.http.io.HttpMessageParser;
-import org.apache.http.io.HttpMessageParserFactory;
-import org.apache.http.io.HttpMessageWriterFactory;
-import org.apache.http.io.SessionInputBuffer;
-import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicLineParser;
-import org.apache.http.message.LineParser;
-import org.apache.http.ssl.SSLContexts;
-import org.apache.http.util.CharArrayBuffer;
-import org.apache.http.util.EntityUtils;
-import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.action.percolate.PercolateResponse;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.Settings;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
-import straw.storm.util.PercolatorHelper;
-import straw.storm.util.RequestsHelper;
-import static org.elasticsearch.index.query.QueryBuilders.*;
-import static org.elasticsearch.index.query.FilterBuilders.*;
-import static org.elasticsearch.common.xcontent.XContentFactory.*;
 
 
 /**
@@ -129,8 +66,9 @@ public class SearchBolt extends BaseRichBolt {
 		this.jedis_client = pool.getResource();
 		// prepare the search engine
 		String host = conf.get("elasticsearch_host").toString();
+		String cluster_name = conf.get("elasticsearch_cluster_name").toString();
 		int port = Integer.parseInt(conf.get("elasticsearch_port").toString());	  
-		Settings settings = ImmutableSettings.settingsBuilder().put("cluster.name", "rwalker-elasticsearch-cluster").build();
+		Settings settings = ImmutableSettings.settingsBuilder().put("cluster.name", cluster_name).build();
 		client = new TransportClient(settings)
 		.addTransportAddress(new InetSocketTransportAddress(host, port));
 		

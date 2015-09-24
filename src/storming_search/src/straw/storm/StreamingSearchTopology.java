@@ -74,6 +74,7 @@ public class StreamingSearchTopology {
     ConfigurationManager config_manager = new ConfigurationManager();
     config_manager.put("stream_file", "example_file");
     config_manager.put("elasticsearch_host", "elasticsearch_host");
+    config_manager.put("elasticsearch_cluster_name", "elasticsearch_cluster_name");
     config_manager.put("elasticsearch_port", "elasticsearch_port");
     config_manager.put("index_name", "index_name");
     config_manager.put("document_type", "document_type");
@@ -114,8 +115,8 @@ public class StreamingSearchTopology {
     // topology definition
     TopologyBuilder builder = new TopologyBuilder();
     builder.setSpout("query-spout", new KafkaSpout(query_spout_config), 1);
-    builder.setSpout("document-spout", new KafkaSpout(document_spout_config), 1);
-    builder.setBolt("search-bolt", new SearchBolt(), 1)
+    builder.setSpout("document-spout", new KafkaSpout(document_spout_config), 2);
+    builder.setBolt("search-bolt", new SearchBolt(), 3)
     	.allGrouping("query-spout")
     	.shuffleGrouping("document-spout");
     	
