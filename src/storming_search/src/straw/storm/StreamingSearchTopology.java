@@ -79,22 +79,23 @@ public class StreamingSearchTopology {
     config_manager.put("document_type", "document_type");
     config_manager.put("kafka_query_topic", "kafka_query_topic");
     config_manager.put("kafka_document_topic", "kafka_document_topic");
-    config_manager.put("zookeeper_hosts", "zookeeper_hosts");
+    config_manager.put("zookeeper_host", "zookeeper_host");
+    config_manager.put("zookeeper_port", "zookeeper_port");
     config_manager.put("redis_host", "redis_host");
     config_manager.put("redis_port", "redis_port");
-    
     Config config = config_manager.get();
     
     /*
      * KafkaSpout configuration
      */
-       
     // offset management
     String zkroot = "/brokers"; // the root path in Zookeeper for the spout to store the consumer offsets
     String zkid = "ids"; // an id for this consumer for storing the consumer offsets in Zookeeper
     
     // set zookeeper host
-    BrokerHosts brokerHosts = new ZkHosts("localhost:2181", zkroot);
+    BrokerHosts brokerHosts = new ZkHosts( String.format("%s:%s", 
+    		config.get("zookeeper_host").toString(), 
+    		config.get("zookeeper_port")).toString(), zkroot);
     
     // kafka topics
     String query_topic = config.get("kafka_query_topic").toString();
