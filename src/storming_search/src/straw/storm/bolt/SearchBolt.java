@@ -97,7 +97,8 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
-
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -129,7 +130,8 @@ public class SearchBolt extends BaseRichBolt {
 		// prepare the search engine
 		String host = conf.get("elasticsearch_host").toString();
 		int port = Integer.parseInt(conf.get("elasticsearch_port").toString());	  
-		client = new TransportClient()
+		Settings settings = ImmutableSettings.settingsBuilder().put("cluster.name", "rwalker-elasticsearch-cluster").build();
+		client = new TransportClient(settings)
 		.addTransportAddress(new InetSocketTransportAddress(host, port));
 		
 		// prepare the redis client
