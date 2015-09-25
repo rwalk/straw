@@ -35,6 +35,12 @@ class QuerySubscriber:
         if self._thread is not None:
             self._thread.stop()
         self.start()
+
+    def close(self):
+        try:
+            self._thread.stop()
+        except:
+            pass
                
 if __name__=="__main__":
     mydata = []
