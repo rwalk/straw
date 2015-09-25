@@ -9,8 +9,7 @@ import json
 
 @app.route('/_fetch_messages')
 def fetch_messages():
-    print(app.disp[::-1])
-    return jsonify(result=app.disp[-10::-1])
+    return jsonify(result=app.disp[::-1])
 
 @app.route('/')
 def index():
