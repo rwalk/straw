@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 #
 #   Simple example of redis pubsub management in Python.
 #
@@ -16,7 +16,7 @@ if __name__=="__main__":
     def message_handler(message):
         print('MSG:', message['data'])
     
-    query = input("Please enter the topic you'd like to follow: ")
+    query = raw_input("Please enter the topic you'd like to follow: ")
 
     # subscribe to first topic in background thread
     queries = {query: message_handler}
