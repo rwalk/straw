@@ -75,13 +75,52 @@
       </div>
 
 
+
+    <div class="page-header">
+        <h2>Register a query</h2>
+    </div>
+        Query will match documents containing all words.<br><br>
+        <form action="." method="POST">
+            <input type="text" name="text" style="width: 75%">
+            <button type="button" class="btn btn-lg btn-success" value="register">Register</button>
+        </form>
+    <div class="page-header">
+        <h2>Your alerts</h2>
+    </div>
+
+<script type="text/javascript"
+  src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js">
+</script>
+<script type="text/javascript">
+  var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+</script>
+<script type=text/javascript>
+    $(document).ready(
+            function() {
+                setInterval(function() {
+                    var randomnumber = "hello";
+                    $.getJSON($SCRIPT_ROOT + '/_fetch_messages', {
+                          }, function(data) {
+                            var result="";
+                            for(var i=0;i<data.result.length;i++)
+                            {
+                                result += '<div>'+data.result[i]+'</div>';
+                            }
+                            document.getElementById("result").innerHTML = result
+                            //$("#result").text(result);
+                          });
+                }, 500);
+            });
+</script>
+<div id="result" align="center"></div>
+
       <div class="page-header">
         <h1>Buttons</h1>
       </div>
       <p>
         <button type="button" class="btn btn-lg btn-default">Default</button>
         <button type="button" class="btn btn-lg btn-primary">Primary</button>
-        <button type="button" class="btn btn-lg btn-success">Success</button>
+        
         <button type="button" class="btn btn-lg btn-info">Info</button>
         <button type="button" class="btn btn-lg btn-warning">Warning</button>
         <button type="button" class="btn btn-lg btn-danger">Danger</button>
@@ -632,10 +671,10 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script src="../static/js/bootstrap.min.js"></script>
-    <script src="../static/js/docs.min.js"></script>
+    <script type=text/javascript src="../static/js/jquery.js"></script>
+    <script type=text/javascript src="../static/js/bootstrap.min.js"></script>
+    <script type=text/javascript src="../static/js/docs.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
+    <script type=text/javascript src="../static/js/ie10-viewport-bug-workaround.js"></script>
   </body>
 </html>
