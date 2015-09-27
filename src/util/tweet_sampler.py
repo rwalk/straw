@@ -10,10 +10,9 @@ access_token_secret = os.environ["TWITTER_SECRET_TOKEN"]
 consumer_key = os.environ["TWITTER_CONSUMER_TOKEN"]
 consumer_secret = os.environ["TWITTER_CONSUMER_SECRET"]
 
-
 class StrawStreamer(twython.TwythonStreamer):
 
-    def __init__(self, APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET, outfile, outfile2):
+    def __init__(self, APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_TOKEN_SECRET, outfile):
         super(StrawStreamer, self).__init__(APP_KEY, APP_SECRET,OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
         self.outfile=outfile
 
@@ -34,7 +33,15 @@ if __name__=="__main__":
 
     twitter = twython.Twython(consumer_key, consumer_secret)
     with open(args.file, "ab") as f:
-        with open(args.file+'.text', "ab") as f2:
-            stream = StrawStreamer(consumer_key, consumer_secret, access_token, access_token_secret, f, f2)
-            stream.statuses.sample(language="en")
+        while True:
+            try:
+                stream = StrawStreamer(consumer_key, consumer_secret, access_token, access_token_secret, f)
+                stream.statuses.sample(language="en")
+            except socket.timeout as e:
+                print("GOT SOCKET ERROR: {0}".format(e))
+                print("Retrying connection")
+                f.flush()
+                time.sleep(500)
+                    
+                    
         
