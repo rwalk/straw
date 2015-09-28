@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import twython, json, re, argparse, subprocess, os, sys, time
+from socket import timeout
 
 ####################
 #    Constants
@@ -19,7 +20,6 @@ class StrawStreamer(twython.TwythonStreamer):
     def on_success(self, data):
         if 'text' in data:
             self.outfile.write((json.dumps(data)+u'\n').encode('utf-8'))
-            print(data)
 
     def on_error(self, status_code, data):
         print(status_code)
@@ -37,11 +37,8 @@ if __name__=="__main__":
             try:
                 stream = StrawStreamer(consumer_key, consumer_secret, access_token, access_token_secret, f)
                 stream.statuses.sample(language="en")
-            except socket.timeout as e:
+            except timeout as e:
                 print("GOT SOCKET ERROR: {0}".format(e))
-                print("Retrying connection")
+                print("Retrying connection after 500 second wait...")
                 f.flush()
                 time.sleep(500)
-                    
-                    
-        
