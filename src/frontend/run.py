@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from app.straw_app import get_straw_app
-
+import redis
 if __name__=="__main__":
 
     # a dumb little config reader
@@ -13,8 +13,9 @@ if __name__=="__main__":
             ls = line.split("=")
             config[ls[0]]=ls[1]
 
-    # run the app
- 
+    # get the app and clear the redis db
     app = get_straw_app(config)
+    redis_connection = redis.Redis(connection_pool=app.pool)
+    redis_connection.flushall()
     app.run(host='0.0.0.0', debug = True)
 

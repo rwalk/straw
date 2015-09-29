@@ -74,16 +74,22 @@
         <p>Straw is a platform for real-time, full text search on streaming data.</p>
       </div>
 
-
-
     <div class="page-header">
         <h2>Register a query</h2>
     </div>
-        Query will match documents containing all words.<br><br>
-        <form action="." method="POST">
-            <input type="text" name="text" style="width: 75%">
-            <button type="button" class="btn btn-lg btn-success" value="register">Register</button>
-        </form>
+    <form action="." method="POST">
+        <input type="text" name="text" style="width: 75%">
+        <input type="submit" class="btn btn-lg btn-success" value="Submit">
+    </form>
+    <div class="page-header">
+        <h2>Your Queries</h2>
+    </div>
+    <div class="page-header" id="query_list" align=left>
+        {% for query in query_list %}
+        <div> {{query}} </div>
+        {% endfor %}
+    </div>
+
     <div class="page-header">
         <h2>Your alerts</h2>
     </div>

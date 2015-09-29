@@ -18,6 +18,9 @@ class StrawAppBase:
         kafka = KafkaClient("{0}:{1}".format(config["zookeeper_host"], 9092))
         app.producer = SimpleProducer(kafka)
 
+        # attach a redis connection pool
+        app.pool = redis.ConnectionPool(host="localhost", port=6379)
+
         self.app = app
 
 def get_straw_app(config):
