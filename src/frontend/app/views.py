@@ -7,11 +7,18 @@ from time import sleep
 import md5, redis
 import json
 
+MAX_RESULTS = 100
+
 def attach_views(app):
 
     @app.route('/_fetch_messages')
     def fetch_messages():
-        return jsonify(result=app.disp[::-1])
+        # get a redis connection
+        redis_connection = redis.Redis(connection_pool=app.pool)
+
+        # update the query list in the view
+        matches = redis_connection.lrange('matches', 0, MAX_RESULTS)
+        return jsonify(result=matches)
 
     @app.route('/', methods=['GET'])
     def index():

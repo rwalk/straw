@@ -10,13 +10,15 @@ def message_handler(data, message):
  
 class QuerySubscriber:
 
-    def __init__(self, host, port, data_queue):
+    def __init__(self, host, port, msg_handler):
+        ''' Query subscriber takes an arbitrary msg_handler which is a function
+            of a single variable message.'''
         pool = redis.ConnectionPool(host='localhost', port=6379, db=0)
         r = redis.StrictRedis(connection_pool=pool)
         self.connection = r.pubsub(ignore_subscribe_messages=True)
         self.queries = []
         self._thread = None
-        self.handler = lambda x: message_handler(data_queue, x)     
+        self.handler = msg_handler   
 
     def add_query(self, query):
         # add query to list
@@ -44,13 +46,12 @@ class QuerySubscriber:
                
 if __name__=="__main__":
     mydata = []
-    subscriber = QuerySubscriber("localhost", 6379, message_handler, mydata)
+    subscriber = QuerySubscriber("localhost", 6379, lambda x: message_handler(mydata, x)  )
     query = None
     while True:
         if query is None:
             query = raw_input("Please enter the topic you'd like to follow: ")
-            print
-            print mydata
         else:
             subscriber.add_query(query)
             query = None
+            print mydata

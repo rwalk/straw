@@ -9,17 +9,22 @@ class StrawAppBase:
     def __init__(self, config):
     
         app = Flask(__name__)
-        
+
+        # attach a redis connection pool
+        app.pool = redis.ConnectionPool(host="localhost", port=6379)
+
+        def redis_message_handler(msg):
+            redis_connection = redis.Redis(connection_pool=app.pool)
+            # TODO: Link to user session
+            redis_connection.lpush('matches', msg['data'])
+            
         # Add Redis query subscriber to app
         app.disp = []
-        app.subscriber = QuerySubscriber("localhost", 6379, app.disp)
+        app.subscriber = QuerySubscriber("localhost", 6379, redis_message_handler)
 
         # setup kafka producer in the app
         kafka = KafkaClient("{0}:{1}".format(config["zookeeper_host"], 9092))
         app.producer = SimpleProducer(kafka)
-
-        # attach a redis connection pool
-        app.pool = redis.ConnectionPool(host="localhost", port=6379)
 
         self.app = app
 
