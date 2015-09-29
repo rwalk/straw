@@ -59,3 +59,9 @@ def attach_views(app):
         print(query_list)
         return render_template("index.html", query_list=query_list)
 
+    @app.route('/<page>')
+    def show(page):
+        if page is None or page=="" or page=="try":
+            return render_template("index.html")
+        else:
+            return render_template('%s.html' % page)

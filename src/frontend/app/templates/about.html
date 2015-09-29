@@ -65,52 +65,12 @@
       </div>
 
     <div class="page-header">
-        <h2>Register a query</h2>
+        <h2>An Overview</h2>
     </div>
-    <form action="." method="POST">
-        <input type="text" name="text" style="width: 75%">
-        <input type="submit" class="btn btn-lg btn-success" value="Submit">
-    </form>
+<iframe src="https://docs.google.com/presentation/d/1nlfP69QIpEG2ZywbIGuq0mlBdHd3UT38LdMt1lpLyik/embed?start=false&loop=false&delayms=3000" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
     <div class="page-header">
-        <h2>Your Queries</h2>
+        <h2>Watch</h2>
     </div>
-    <div class="page-header" id="query_list" align=left>
-        {% for query in query_list %}
-        <div> {{query}} </div>
-        {% endfor %}
-    </div>
-
-    <div class="page-header">
-        <h2>Your alerts</h2>
-    </div>
-
-<script type="text/javascript"
-  src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js">
-</script>
-<script type="text/javascript">
-  var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-</script>
-<script type=text/javascript>
-    $(document).ready(
-            function() {
-                setInterval(function() {
-                    var randomnumber = "hello";
-                    $.getJSON($SCRIPT_ROOT + '/_fetch_messages', {
-                          }, function(data) {
-                            var result="";
-                            for(var i=0;i<data.result.length;i++)
-                            {
-                                result += '<div>'+data.result[i]+'</div>';
-                            }
-                            document.getElementById("result").innerHTML = result
-                            //$("#result").text(result);
-                          });
-                }, 500);
-            });
-</script>
-<div id="result" align="left"></div>
-
-
     </div> <!-- /container -->
 
 
