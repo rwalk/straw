@@ -1,9 +1,16 @@
 #!/usr/bin/env python
 from app.straw_app import get_straw_app
 import redis
+import argparse
+
 if __name__=="__main__":
 
-    # a dumb little config reader
+    # arg parsing
+    parser = argparse.ArgumentParser(description="Launch straw webserver frontend")
+    parser.add_argument("-p", "--port", default=5000, help="port, default 5000")
+    parser.add_argument("--debug", help="Use flask debug mode, default False.", action="store_true")    
+    args = parser.parse_args()
+
     with open("../storming_search/config/config.properties", "r") as f:
         lines = f.readlines()
 
@@ -17,5 +24,5 @@ if __name__=="__main__":
     app = get_straw_app(config)
     redis_connection = redis.Redis(connection_pool=app.pool)
     redis_connection.flushall()
-    app.run(host='0.0.0.0', debug = True)
+    app.run(host='0.0.0.0', port=int(args.port), debug = args.debug)
 
