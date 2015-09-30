@@ -55,7 +55,6 @@ public class QuerySpout extends BaseRichSpout {
   public void nextTuple() {
 	  
 	// put some slack in the pipeline for initial development
-    Utils.sleep(1000);
     String str, query, user_id, query_id, request_id;
     
     // buffered read from the file

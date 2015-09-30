@@ -88,7 +88,6 @@ public class SearchBolt extends BaseRichBolt {
 		// Values("query", request_id, user_id, query_id, query)
 		// Values("document", source, document)
 		if(sourcename.toLowerCase().contains("query")){
-			System.out.println(data);
 			// add queries
 			QueryBuilder query = PercolatorHelper.make_query(data);
 
@@ -110,8 +109,6 @@ public class SearchBolt extends BaseRichBolt {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
-				System.out.println("QUERY: " + query.toString());
 			}
 		}
 		else if (sourcename.toLowerCase().contains("document")){
@@ -142,7 +139,6 @@ public class SearchBolt extends BaseRichBolt {
 
 				//Handle the result which is the set of queries in the percolator
 				for(PercolateResponse.Match match : response) {
-					System.out.println("Query: " + match.getId().toString() + " matched document " + text);
 					// emit results
 					collector.emit(new Values(data));
 					jedis_client.publish(match.getId().toString(), text);					

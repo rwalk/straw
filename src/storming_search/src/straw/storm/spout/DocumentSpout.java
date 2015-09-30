@@ -56,7 +56,6 @@ public class DocumentSpout extends BaseRichSpout {
   public void nextTuple() {
 	  
 	// put some slack in the pipeline for initial development
-    Utils.sleep(10);
     String str, msg;
     
     // once the file is done reading, we just start over again
