@@ -43,6 +43,10 @@ class QuerySubscriber:
             self._thread.stop()
         except:
             pass
+
+    def clear(self):
+        self.connection.flushall()
+        self.queries = []
                
 if __name__=="__main__":
     mydata = []

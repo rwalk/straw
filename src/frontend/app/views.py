@@ -38,7 +38,7 @@ def attach_views(app):
 
         # TODO: clear only the current user
         if 'clear' in request.form:
-            redis_connection.flushall()
+            app.subscriber.clear()
             return render_template("index.html", query_list=[])
 
         # create a new query
