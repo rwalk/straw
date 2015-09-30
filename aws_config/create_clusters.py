@@ -310,7 +310,17 @@ if __name__=="__main__":
             KeyName=pemkey,
             ImageId=base_aws_image,
             InstanceType='m4.large',
-            NetworkInterfaces=[{'SubnetId': subnet.id, 'DeviceIndex':0, 'Groups':[security_group.id], 'AssociatePublicIpAddress':True}]
+            NetworkInterfaces=[{'SubnetId': subnet.id, 'DeviceIndex':0, 'Groups':[security_group.id], 'AssociatePublicIpAddress':True}],
+            BlockDeviceMappings=[
+                {
+                    'VirtualName': 'ephemeral0',
+                    'DeviceName': '/dev/sda1',
+                    'Ebs': {
+                        'VolumeSize': 64,
+                        'VolumeType': 'gp2'        # standard for magnetic, gp2 for SSD
+                    }
+                }
+            ]
         )
 
         # tag instances and assign a public ip

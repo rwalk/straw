@@ -26,15 +26,20 @@ def attach_views(app):
 
     @app.route('/', methods=['POST'])
     def my_form_post():
-
+        print(request.form.keys())
         # get a redis connection
         redis_connection = redis.Redis(connection_pool=app.pool)
-
+         
         # userid state
         userid = request.args.get('userid')
 
         if userid is None:
             userid = md5.new("demo-mode-no-user").hexdigest()
+
+        # TODO: clear only the current user
+        if 'clear' in request.form:
+            redis_connection.flushall()
+            return render_template("index.html", query_list=[])
 
         # create a new query
         text = request.form['text'].split(" ")
@@ -56,7 +61,6 @@ def attach_views(app):
 
         # update the query list in the view
         query_list = redis_connection.lrange(userid, 0, -1)
-        print(query_list)
         return render_template("index.html", query_list=query_list)
 
     @app.route('/<page>')
