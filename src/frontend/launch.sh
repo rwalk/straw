@@ -1,2 +1,2 @@
 #!/bin/bash
-./run.py -p 80
+./run.py -p 80 --debug

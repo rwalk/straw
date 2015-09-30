@@ -26,7 +26,6 @@ def attach_views(app):
 
     @app.route('/', methods=['POST'])
     def my_form_post():
-        print(request.form.keys())
         # get a redis connection
         redis_connection = redis.Redis(connection_pool=app.pool)
          
