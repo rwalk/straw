@@ -15,7 +15,7 @@ class QuerySubscriber:
             of a single variable message.'''
         pool = redis.ConnectionPool(host='localhost', port=6379)
         r = redis.Redis(connection_pool=pool)
-	self._redis_db = r
+        self._redis_db = r
         self.connection = r.pubsub(ignore_subscribe_messages=True)
         self.queries = []
         self._thread = None
@@ -30,17 +30,17 @@ class QuerySubscriber:
 
     def start(self):
         queries = dict((k,v) for (k,v) in [(k,self.handler) for k in self.queries])
-	if len(queries)>0: 
+        if len(queries)>0: 
             self.connection.subscribe(**queries)
             self._thread = self.connection.run_in_thread(sleep_time=0.001)
-	else:
+        else:
             self._thread = None
 	
     def _update(self):
         # WARNING: We might drop some messages here
         if self._thread is not None:
             self._thread.stop()
-	    self._thread=None
+            self._thread=None
         self.start()
 
     def close(self):

@@ -3,6 +3,7 @@ from kafka import SimpleProducer, KafkaClient
 from flask import Flask
 from query_subscriber import QuerySubscriber
 from views import attach_views
+from datetime import datetime
 
 def highlight(word):
     return("<span style=\"background-color: #FFFF00\">{0}</span>".format(word))
@@ -18,8 +19,11 @@ class StrawAppBase:
 
         def redis_message_handler(msg):
             redis_connection = redis.Redis(connection_pool=app.pool)
-            # TODO: Link to user session
 
+            # for benchmarking, add a time stamp to the message 
+            if config['benchmark']:
+                msg['data']=datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f ') + msg['data']
+            
             # word highlighting -- TODO: this would be better to do in the search engine!
             query_list = redis_connection.lrange("queries", 0, -1)
             words = []
@@ -28,6 +32,8 @@ class StrawAppBase:
             words = list(set(words))
             for w in words:
                 msg['data']=msg['data'].replace(w, highlight(w))
+
+            # move the recieved messages into the redis "matches" table
             redis_connection.lpush('matches', msg['data'])
             
         # Add Redis query subscriber to app
