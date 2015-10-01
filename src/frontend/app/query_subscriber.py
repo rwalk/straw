@@ -13,8 +13,9 @@ class QuerySubscriber:
     def __init__(self, host, port, msg_handler):
         ''' Query subscriber takes an arbitrary msg_handler which is a function
             of a single variable message.'''
-        pool = redis.ConnectionPool(host='localhost', port=6379, db=0)
-        r = redis.StrictRedis(connection_pool=pool)
+        pool = redis.ConnectionPool(host='localhost', port=6379)
+        r = redis.Redis(connection_pool=pool)
+	self._redis_db = r
         self.connection = r.pubsub(ignore_subscribe_messages=True)
         self.queries = []
         self._thread = None
@@ -28,14 +29,18 @@ class QuerySubscriber:
         self._update()
 
     def start(self):
-        queries = dict((k,v) for (k,v) in [(k,self.handler) for k in self.queries]) 
-        self.connection.subscribe(**queries)
-        self._thread = self.connection.run_in_thread(sleep_time=0.001)
-
+        queries = dict((k,v) for (k,v) in [(k,self.handler) for k in self.queries])
+	if len(queries)>0: 
+            self.connection.subscribe(**queries)
+            self._thread = self.connection.run_in_thread(sleep_time=0.001)
+	else:
+            self._thread = None
+	
     def _update(self):
         # WARNING: We might drop some messages here
         if self._thread is not None:
             self._thread.stop()
+	    self._thread=None
         self.start()
 
     def close(self):
@@ -45,9 +50,10 @@ class QuerySubscriber:
             pass
 
     def clear(self):
-        self.connection.flushall()
-        self.queries = []
-               
+	self.connection.unsubscribe()
+	self.queries =[]
+        self._redis_db.flushall()
+   
 if __name__=="__main__":
     mydata = []
     subscriber = QuerySubscriber("localhost", 6379, lambda x: message_handler(mydata, x)  )
