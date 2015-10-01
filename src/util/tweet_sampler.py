@@ -45,7 +45,7 @@ class KafkaStrawStreamer(twython.TwythonStreamer):
         # connect to Kafka
         print("Connecting to Kafka node {0}:{1}".format(host, port))
         kafka = KafkaClient("{0}:{1}".format(host, port))
-        self.producer = SimpleProducer(kafka)
+        self.producer = BufferedSimpleProducer(kafka, 100)
 
     def on_success(self, data):
         # TODO: add message queue so we can pass messages in bulk
@@ -56,6 +56,21 @@ class KafkaStrawStreamer(twython.TwythonStreamer):
     def on_error(self, status_code, data):
         print(status_code)    
 
+class BufferedSimpleProducer:
+    def __init__(self, kafka, chunk_size):
+        self.producer = SimpleProducer(kafka)
+        self.queues = {}
+        self.chunk_size = chunk_size
+
+    def send_messages(self, topic, msg):
+        if topic not in self.queues:
+            self.queues[topic]=[]
+        if len(self.queues[topic])<self.chunk_size:
+            self.queues[topic].append(msg)
+        else:
+            self.producer.send_messages(topic, *(self.queues[topic]))
+            print("Sent {0} documents to Kafka.".format(len(self.queues[topic])))
+            self.queues[topic] = []
 
 if __name__=="__main__":
 
