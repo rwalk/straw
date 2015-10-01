@@ -16,3 +16,5 @@ body {
 .theme-showcase .navbar .container {
   width: auto;
 }
+
+.highlight { background-color: yellow }

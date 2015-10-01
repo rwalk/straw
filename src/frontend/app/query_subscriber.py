@@ -50,8 +50,8 @@ class QuerySubscriber:
             pass
 
     def clear(self):
-	self.connection.unsubscribe()
-	self.queries =[]
+        self.connection.unsubscribe()
+        self.queries =[]
         self._redis_db.flushall()
    
 if __name__=="__main__":

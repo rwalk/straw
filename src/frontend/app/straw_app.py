@@ -4,6 +4,9 @@ from flask import Flask
 from query_subscriber import QuerySubscriber
 from views import attach_views
 
+def highlight(word):
+    return("<span style=\"background-color: #FFFF00\">{0}</span>".format(word))
+
 class StrawAppBase:
 
     def __init__(self, config):
@@ -16,6 +19,15 @@ class StrawAppBase:
         def redis_message_handler(msg):
             redis_connection = redis.Redis(connection_pool=app.pool)
             # TODO: Link to user session
+
+            # word highlighting -- TODO: this would be better to do in the search engine!
+            query_list = redis_connection.lrange("queries", 0, -1)
+            words = []
+            for q in query_list:
+                words.extend(q.split(" "))
+            words = list(set(words))
+            for w in words:
+                msg['data']=msg['data'].replace(w, highlight(w))
             redis_connection.lpush('matches', msg['data'])
             
         # Add Redis query subscriber to app

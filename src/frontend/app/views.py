@@ -29,12 +29,6 @@ def attach_views(app):
         # get a redis connection
         redis_connection = redis.Redis(connection_pool=app.pool)
          
-        # userid state
-        userid = request.args.get('userid')
-
-        if userid is None:
-            userid = md5.new("demo-mode-no-user").hexdigest()
-
         # TODO: clear only the current user
         if 'clear' in request.form:
             app.subscriber.clear()
@@ -50,7 +44,7 @@ def attach_views(app):
         redis_connection.set(qid, text)
 
         # add the query text to the users query store
-        redis_connection.lpush(userid, request.form['text'])
+        redis_connection.lpush("queries", request.form['text'])
 
         # register the query with the Straw platform
         app.producer.send_messages("queries", data)
@@ -59,7 +53,7 @@ def attach_views(app):
         app.subscriber.add_query(qid)
 
         # update the query list in the view
-        query_list = redis_connection.lrange(userid, 0, -1)
+        query_list = redis_connection.lrange("queries", 0, -1)
         return render_template("index.html", query_list=query_list)
 
     @app.route('/<page>')
