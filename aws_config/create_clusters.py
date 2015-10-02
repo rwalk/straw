@@ -24,9 +24,9 @@ vpc_cidr = "10.0.0.0/27"
 subnet_cidr = "10.0.0.0/27"
 
 # node settings
-kafka_instances=4                 
+kafka_instances=5                 
 elasticsearch_instances=3
-storm_instances=4
+storm_instances=7
 
 # initializtion files
 path = "host_install_scripts"
@@ -185,7 +185,7 @@ if __name__=="__main__":
                     'VirtualName': 'ephemeral0',
                     'DeviceName': '/dev/sda1',
                     'Ebs': {
-                        'VolumeSize': 64,
+                        'VolumeSize': 128,
                         'VolumeType': 'gp2'        # standard for magnetic, gp2 for SSD
                     }
                 }
@@ -348,8 +348,18 @@ if __name__=="__main__":
             UserData=shellfile,
             KeyName=pemkey,
             ImageId=base_aws_image,
-            InstanceType='t2.micro',
-            NetworkInterfaces=[{'SubnetId': subnet.id, 'DeviceIndex':0, 'Groups':[security_group.id], 'AssociatePublicIpAddress':True}]
+            InstanceType='m4.large',
+            NetworkInterfaces=[{'SubnetId': subnet.id, 'DeviceIndex':0, 'Groups':[security_group.id], 'AssociatePublicIpAddress':True}],
+            BlockDeviceMappings=[
+                {
+                    'VirtualName': 'ephemeral0',
+                    'DeviceName': '/dev/sda1',
+                    'Ebs': {
+                        'VolumeSize': 32,
+                        'VolumeType': 'gp2'        # standard for magnetic, gp2 for SSD
+                    }
+                }
+            ]
         )
 
         # tag instances and assign a public ip
