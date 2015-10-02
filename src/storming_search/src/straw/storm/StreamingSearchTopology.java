@@ -113,15 +113,15 @@ public class StreamingSearchTopology {
     
     // topology definition
     TopologyBuilder builder = new TopologyBuilder();
-    builder.setSpout("query-spout", new KafkaSpout(query_spout_config), 3);
-    builder.setSpout("document-spout", new KafkaSpout(document_spout_config), 3);
-    builder.setBolt("search-bolt", new SearchBolt(), 6)
+    builder.setSpout("query-spout", new KafkaSpout(query_spout_config), 1);
+    builder.setSpout("document-spout", new KafkaSpout(document_spout_config), 1);
+    builder.setBolt("search-bolt", new SearchBolt(), 2)
     	.allGrouping("query-spout")
     	.shuffleGrouping("document-spout");
     	
     // topology submission
     if (args != null && args.length > 0) {
-      config.setNumWorkers(4);
+      config.setNumWorkers(2);
       StormSubmitter.submitTopologyWithProgressBar(args[0], config, builder.createTopology());
     }
     else {

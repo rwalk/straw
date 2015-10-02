@@ -21,6 +21,7 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Timer;
 
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.percolate.PercolateResponse;
@@ -35,8 +36,10 @@ import org.elasticsearch.index.query.QueryBuilder;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import straw.storm.util.Counter;
 import straw.storm.util.PercolatorHelper;
 import straw.storm.util.RequestsHelper;
+import straw.storm.util.ScheduledMessageCounter;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -56,7 +59,8 @@ public class SearchBolt extends BaseRichBolt {
 	private TransportClient client;
 	private static JedisPool pool; 
 	private Jedis jedis_client;
-	
+	private Counter counter;
+
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void prepare(Map conf, TopologyContext context, OutputCollector collector) {
@@ -71,8 +75,13 @@ public class SearchBolt extends BaseRichBolt {
 		Settings settings = ImmutableSettings.settingsBuilder().put("cluster.name", cluster_name).build();
 		client = new TransportClient(settings)
 		.addTransportAddress(new InetSocketTransportAddress(host, port));
-		
-		// prepare the redis client
+		counter = new Counter();
+
+		// count messages periodically
+		ScheduledMessageCounter message_counter = new ScheduledMessageCounter(counter, conf);
+		Timer time = new Timer(); // Instantiate Timer Object
+		time.schedule(message_counter, 0, 10000); // Create Repetitively task for every 30 secs
+
 	}
 
 	@Override
@@ -114,28 +123,31 @@ public class SearchBolt extends BaseRichBolt {
 		else if (sourcename.toLowerCase().contains("document")){
 			// try to parse as document
 			String text = PercolatorHelper.extract_text(data);
-		
+
 			//Build a document to check against the percolator
-		    XContentBuilder docBuilder = null;
+			XContentBuilder docBuilder = null;
 			if (text != null){
 				try {
 					docBuilder = XContentFactory.jsonBuilder().startObject();
-				    docBuilder.field("doc").startObject(); //This is needed to designate the document
-				    docBuilder.field("text", text);
-				    docBuilder.endObject(); //End of the doc field
-				    docBuilder.endObject(); //End of the JSON root object
+					docBuilder.field("doc").startObject(); //This is needed to designate the document
+					docBuilder.field("text", text);
+					docBuilder.endObject(); //End of the doc field
+					docBuilder.endObject(); //End of the JSON root object
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
-				
+
 			if (docBuilder != null) {
-			//Percolate
-			PercolateResponse response = client.preparePercolate()
-					.setIndices(conf.get("index_name").toString())
-					.setDocumentType(conf.get("document_type").toString())
-					.setSource(docBuilder).execute().actionGet();
+				//Percolate
+				PercolateResponse response = client.preparePercolate()
+						.setIndices(conf.get("index_name").toString())
+						.setDocumentType(conf.get("document_type").toString())
+						.setSource(docBuilder).execute().actionGet();
+
+				// update the counter
+				counter.count+=1;
 
 				//Handle the result which is the set of queries in the percolator
 				for(PercolateResponse.Match match : response) {
@@ -143,6 +155,7 @@ public class SearchBolt extends BaseRichBolt {
 					collector.emit(new Values(data));
 					jedis_client.publish(match.getId().toString(), text);					
 				}
+
 			}
 		}
 
@@ -161,6 +174,5 @@ public class SearchBolt extends BaseRichBolt {
 		client.close();
 		pool.destroy();
 	}
-
 
 }
