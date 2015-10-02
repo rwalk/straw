@@ -115,4 +115,15 @@ if __name__=="__main__":
         print(cmd)
         res=os.system(cmd)
         if res!=0:
-            raise(RuntimeError("Something went wrong executing {0}  Got exit: {1}".format(cmd, res)))     
+            raise(RuntimeError("Something went wrong executing {0}  Got exit: {1}".format(cmd, res)))
+
+
+    # create the documents and queries topics on one of the Kafka nodes
+    h = hosts[0]
+    cmd_str = ["ssh -i {0} ubuntu@{1} /usr/local/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor {2} --partitions {3} --topic documents".format(keyfile, h, 2, 3), "ssh -i {0} ubuntu@{1} /usr/local/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor {2} --partitions {3} --topic queries".format(keyfile, h, 2, 3)]
+    
+    for cmd in cmd_str:
+        print(cmd)
+        res=os.system(cmd)
+        if res!=0:
+            raise(RuntimeError("Something went wrong executing {0}  Got exit: {1}".format(cmd, res)))

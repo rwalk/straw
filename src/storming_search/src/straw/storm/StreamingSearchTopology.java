@@ -72,7 +72,6 @@ public class StreamingSearchTopology {
 	 * 
 	 */
     ConfigurationManager config_manager = new ConfigurationManager();
-    config_manager.put("stream_file", "example_file");
     config_manager.put("elasticsearch_host", "elasticsearch_host");
     config_manager.put("elasticsearch_cluster_name", "elasticsearch_cluster_name");
     config_manager.put("elasticsearch_port", "elasticsearch_port");

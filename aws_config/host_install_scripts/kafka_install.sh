@@ -12,5 +12,3 @@ tar zxvf ~/Downloads/kafka_2.11-0.8.2.1.tgz -C /usr/local
 mv /usr/local/kafka_2.11-0.8.2.1 /usr/local/kafka
 
 
-
-
