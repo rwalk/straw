@@ -27,7 +27,7 @@ public class ScheduledMessageCounter extends TimerTask {
 	public ScheduledMessageCounter(Counter counter, Map conf){
 		super();
 		this.counter = counter;
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), conf.get("redis_host").toString());
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), conf.get("redis_analytics_host").toString());
 		this.jedis_client = pool.getResource();
 	}
 	
