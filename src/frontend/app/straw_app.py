@@ -31,7 +31,7 @@ class StrawAppBase:
                 words.extend(q.split(" "))
             words = list(set(words))
             for w in words:
-                msg['data']=msg['data'].replace(w, highlight(w))
+                msg['data']=msg['data'].lower().replace(w.lower(), highlight(w.lower()))
 
             # move the recieved messages into the redis "matches" table
             redis_connection.lpush('matches', msg['data'])

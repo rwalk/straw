@@ -6,6 +6,8 @@
 # start elasticsearch
 ./docker_elasticsearch.sh
 
+echo "Sleep additional 30 seconds to give Kafka cluster time to configure itself"
+sleep 30
 # add data to kafka
 (cd ../kafka_stream_eater \
   && ./kafka_stream_producer.py ../../data/tweets.small localhost documents \

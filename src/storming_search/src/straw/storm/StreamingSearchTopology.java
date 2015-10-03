@@ -20,50 +20,19 @@ package straw.storm;
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
-import backtype.storm.spout.SchemeAsMultiScheme;
-import backtype.storm.task.OutputCollector;
-import backtype.storm.task.TopologyContext;
-import backtype.storm.testing.TestWordSpout;
-import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.TopologyBuilder;
-import backtype.storm.topology.base.BaseRichBolt;
-import backtype.storm.tuple.Fields;
-import backtype.storm.tuple.Tuple;
-import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
-
-import java.util.Map;
 
 import storm.kafka.*;
 import straw.storm.bolt.SearchBolt;
-import straw.storm.spout.DocumentSpout;
-import straw.storm.spout.QuerySpout;
 import straw.storm.util.ConfigurationManager;
 
-import org.elasticsearch.*;
-
-// configuration
-import java.io.FileNotFoundException;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
 /**
- * This is a basic example of a Storm topology, following the example
- * https://github.com/buildlackey/cep/tree/master/storm%2Bkafka
- * 
+ * This is the Topology for Streaming Search
  */
 public class StreamingSearchTopology {
 
   public static void main(String[] args) throws Exception {
-	/*
-	 *   Define and packaged a topology to submit to a storm cluster  
-	 */
-	 
 	  
 	/*
 	 * CONFIGURATION
@@ -118,7 +87,7 @@ public class StreamingSearchTopology {
     builder.setBolt("search-bolt", new SearchBolt(), 3)
     	.allGrouping("query-spout")
     	.shuffleGrouping("document-spout");
-    	
+    
     // topology submission
     if (args != null && args.length > 0) {
       config.setNumWorkers(2);

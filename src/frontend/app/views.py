@@ -35,7 +35,7 @@ def attach_views(app):
             return render_template("index.html", query_list=[])
 
         # create a new query
-        text = request.form['text'].split(" ")
+        text = request.form['text'].lower().split(" ")
         msg = {"type":"terms-query","terms":text,"minimum-match":len(text)}
         data = json.dumps(msg)
         qid = md5.new(data).hexdigest()
