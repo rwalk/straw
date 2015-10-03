@@ -52,6 +52,8 @@ public class StreamingSearchTopology {
     config_manager.put("zookeeper_port", "zookeeper_port");
     config_manager.put("redis_host", "redis_host");
     config_manager.put("redis_port", "redis_port");
+    config_manager.put("redis_analytics_host", "redis_analytics_host");
+    config_manager.put("redis_analytics_port", "redis_analytics_port");
     Config config = config_manager.get();
     
     /*
