@@ -32,7 +32,7 @@ if __name__=="__main__":
     parser.add_argument("host", help="Public IP address of a Kafka node")
     parser.add_argument("topic", help="Kafka topic to feed")
     parser.add_argument("-p", "--port", default=9092, help="port for zookeeper, default 9092")
-    parser.add_argument("-c", "--chunksize", default=10, help="Number of messages to send at one time,  default 10")    
+    parser.add_argument("-c", "--chunksize", default=100, help="Number of messages to send at one time,  default 100")    
     args = parser.parse_args()
 
     # get a client
@@ -42,8 +42,6 @@ if __name__=="__main__":
     
     # read through the file and send messages to Kafka in chunks
     with open(args.file, "rb") as f:
-        for chunk in chunk_iterable(f, 10):
+        for chunk in chunk_iterable(f, args.chunksize):
             print("Sending {0} messages to topic {1} on {2}".format(len(chunk), args.topic, args.host))
-            print(chunk[0])
             producer.send_messages(args.topic, *chunk)
-            
