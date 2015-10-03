@@ -26,7 +26,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import straw.storm.util.LuwakHelper;
-import straw.storm.util.PercolatorHelper;
 import straw.storm.util.RequestsHelper;
 import uk.co.flax.luwak.InputDocument;
 import uk.co.flax.luwak.Matches;
@@ -101,7 +100,7 @@ public class LuwakSearchBolt extends BaseRichBolt {
 		}
 		else if (sourcename.toLowerCase().contains("document")){
 			// try to parse as document
-			String text = PercolatorHelper.extract_text(data);
+			String text = LuwakHelper.extract_text(data);
 
 			//Build a document to check against the percolator
 			InputDocument doc = null;
