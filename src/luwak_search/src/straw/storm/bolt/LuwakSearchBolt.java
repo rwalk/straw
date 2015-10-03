@@ -21,12 +21,17 @@ package straw.storm.bolt;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Timer;
+
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import straw.storm.util.Counter;
 import straw.storm.util.LuwakHelper;
 import straw.storm.util.RequestsHelper;
+import straw.storm.util.ScheduledMessageCounter;
 import uk.co.flax.luwak.InputDocument;
 import uk.co.flax.luwak.Matches;
 import uk.co.flax.luwak.Monitor;
@@ -54,6 +59,7 @@ public class LuwakSearchBolt extends BaseRichBolt {
 	private static JedisPool pool; 
 	private Jedis jedis_client;
 	private Monitor monitor;
+	private Counter counter;
 	
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -64,6 +70,13 @@ public class LuwakSearchBolt extends BaseRichBolt {
 		// prepare the redis client
 		this.pool = new JedisPool(new JedisPoolConfig(), conf.get("redis_host").toString());
 		this.jedis_client = pool.getResource();
+		
+		
+		// count message throughput
+		counter = new Counter();
+		ScheduledMessageCounter message_counter = new ScheduledMessageCounter(counter, conf);
+		Timer time = new Timer(); // Instantiate Timer Object
+		time.schedule(message_counter, 0, 10000); // Create Repetitively task for every 30 secs
 		
 		// luwak
 		try {
@@ -78,7 +91,7 @@ public class LuwakSearchBolt extends BaseRichBolt {
 	@Override
 	public void execute(Tuple tuple) {
 
-		// process the tuple recieved from kafka
+		// process the tuple
 		String sourcename = tuple.getSourceComponent();
 		String data = tuple.getValue(0).toString();
 
@@ -92,6 +105,8 @@ public class LuwakSearchBolt extends BaseRichBolt {
 
 			//register the query
 			try {
+				System.out.println(data);
+				System.out.println(query.toString());
 				monitor.update(query);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -109,14 +124,18 @@ public class LuwakSearchBolt extends BaseRichBolt {
 	                    .addField("text", text, new StandardAnalyzer())
 	                    .build();
 			}
-				
+			
+			// pass the document through Luwak
 			if (doc != null) {
 				try {
 					Matches<QueryMatch> matches = monitor.match(doc, SimpleMatcher.FACTORY);
 					
+					// we completed a search, so we need to inform the counter
+					counter.count+=1;
+					
 					//Handle the result which is the set of queries in the percolator
 					for(QueryMatch match : matches) {
-						System.out.println("Query: " + match.toString() + " matched document " + text);
+						// System.out.println("Query: " + match.toString() + " matched document " + text);
 						// emit results
 						collector.emit(new Values(data));
 						jedis_client.publish(match.getQueryId(), text);

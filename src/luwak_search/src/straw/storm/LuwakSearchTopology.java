@@ -59,7 +59,7 @@ public class LuwakSearchTopology {
     config_manager.put("redis_host", "redis_host");
     config_manager.put("redis_port", "redis_port");
     Config config = config_manager.get();
-    
+
     /*
      * KafkaSpout configuration
      */

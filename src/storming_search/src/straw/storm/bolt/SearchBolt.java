@@ -68,6 +68,7 @@ public class SearchBolt extends BaseRichBolt {
 		this.collector = collector;
 		SearchBolt.pool = new JedisPool(new JedisPoolConfig(), conf.get("redis_host").toString());
 		this.jedis_client = pool.getResource();
+		
 		// prepare the search engine
 		String host = conf.get("elasticsearch_host").toString();
 		String cluster_name = conf.get("elasticsearch_cluster_name").toString();
