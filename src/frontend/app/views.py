@@ -4,6 +4,7 @@ Define the views for the straw web app
 '''
 from flask import render_template, request, render_template, jsonify, Flask
 from time import sleep
+from kafka.common import FailedPayloadsError
 import md5, redis
 import json
 
@@ -46,11 +47,22 @@ def attach_views(app):
         # add the query text to the users query store
         redis_connection.lpush("queries", request.form['text'])
 
-        # register the query with the Straw platform
-        app.producer.send_messages("queries", data)
+        # try three times to do the post to kafka.
+        post_success = False
+        for i in range(3):
+            try:
+                app.producer.send_messages("queries", data)
+            except FailedPayloadsError:
+                # wait a bit and try again
+                print("Failed to post query {0} to kafka. Try #{1}".format(data, i))
+                sleep(0.25)
+                continue
+            post_success=True
+            break
 
-        # subscribe the user to the query
-        app.subscriber.add_query(qid)
+        if post_success==True:
+            # subscribe the user to the query
+            app.subscriber.add_query(qid)
 
         # update the query list in the view
         query_list = redis_connection.lrange("queries", 0, -1)
