@@ -133,13 +133,13 @@ public class LuwakSearchBolt extends BaseRichBolt {
 					for(QueryMatch match : matches) {
 						// System.out.println("Query: " + match.toString() + " matched document " + text);
 						// emit results
-						collector.emit(new Values(data));
+						// collector.emit(new Values(data));						
+						//System.out.println(match.toString());
 						
 						// publish the result to jedis
 				        try (Jedis jedis_client = pool.getResource()) {
 				        	jedis_client.publish(match.getQueryId(), text);
-				        }
-						
+				        }						
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
