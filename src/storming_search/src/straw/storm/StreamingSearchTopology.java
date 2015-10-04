@@ -22,8 +22,8 @@ import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
-
 import storm.kafka.*;
+import straw.storm.bolt.LuwakSearchBolt;
 import straw.storm.bolt.SearchBolt;
 import straw.storm.util.ConfigurationManager;
 
@@ -54,6 +54,10 @@ public class StreamingSearchTopology {
     config_manager.put("redis_port", "redis_port");
     config_manager.put("redis_analytics_host", "redis_analytics_host");
     config_manager.put("redis_analytics_port", "redis_analytics_port");
+    config_manager.put("search.bolts", "search.bolts");
+    config_manager.put("document.spouts", "document.spouts");
+    config_manager.put("query.spouts", "query.spouts");
+    config_manager.put("workers", "workers");
     Config config = config_manager.get();
     
     /*
@@ -82,17 +86,18 @@ public class StreamingSearchTopology {
     document_spout_config.scheme = new KeyValueSchemeAsMultiScheme(new StringKeyValueScheme());
     query_spout_config.scheme = new KeyValueSchemeAsMultiScheme(new StringKeyValueScheme());
     
-    // topology definition
+    
+    // distribute queries and documents randomly to bolts (since Elasticsearch is centralized, we don't need to broadcast queries).
     TopologyBuilder builder = new TopologyBuilder();
-    builder.setSpout("query-spout", new KafkaSpout(query_spout_config), 1);
-    builder.setSpout("document-spout", new KafkaSpout(document_spout_config), 3);
-    builder.setBolt("search-bolt", new SearchBolt(), 3)
-    	.allGrouping("query-spout")
+    builder.setSpout("query-spout", new KafkaSpout(query_spout_config), Integer.parseInt(config.get("query.spouts").toString()));
+    builder.setSpout("document-spout", new KafkaSpout(document_spout_config), Integer.parseInt(config.get("document.spouts").toString()));
+    builder.setBolt("search-bolt", new SearchBolt(), Integer.parseInt(config.get("search.bolts").toString()))
+    	.shuffleGrouping("query-spout")
     	.shuffleGrouping("document-spout");
     
     // topology submission
     if (args != null && args.length > 0) {
-      config.setNumWorkers(2);
+        config.setNumWorkers(Integer.parseInt(config.get("workers").toString()));
       StormSubmitter.submitTopologyWithProgressBar(args[0], config, builder.createTopology());
     }
     else {

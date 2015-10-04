@@ -60,6 +60,12 @@ public class LuwakSearchTopology {
     config_manager.put("redis_port", "redis_port");
     config_manager.put("redis_analytics_host", "redis_analytics_host");
     config_manager.put("redis_analytics_port", "redis_analytics_port");
+    config_manager.put("search.bolts", "search.bolts");
+    config_manager.put("document.spouts", "document.spouts");
+    config_manager.put("query.spouts", "query.spouts");
+    config_manager.put("workers", "workers");
+    
+    
     Config config = config_manager.get();
 
     /*
@@ -89,16 +95,17 @@ public class LuwakSearchTopology {
     query_spout_config.scheme = new KeyValueSchemeAsMultiScheme(new StringKeyValueScheme());
     
     // topology definition
+    // distribute documents randomly to bolts; queries are localized in memory at the bolt so we need to broadcast them
     TopologyBuilder builder = new TopologyBuilder();
-    builder.setSpout("query-spout", new KafkaSpout(query_spout_config), 1);
-    builder.setSpout("document-spout", new KafkaSpout(document_spout_config), 3);
-    builder.setBolt("search-bolt", new LuwakSearchBolt(), 3)
+    builder.setSpout("query-spout", new KafkaSpout(query_spout_config), Integer.parseInt(config.get("query.spouts").toString()));
+    builder.setSpout("document-spout", new KafkaSpout(document_spout_config), Integer.parseInt(config.get("document.spouts").toString()));
+    builder.setBolt("search-bolt", new LuwakSearchBolt(), Integer.parseInt(config.get("search.bolts").toString()))
     	.allGrouping("query-spout")
     	.shuffleGrouping("document-spout");
     	
     // topology submission
     if (args != null && args.length > 0) {
-      config.setNumWorkers(2);
+      config.setNumWorkers(Integer.parseInt(config.get("workers").toString()));
       StormSubmitter.submitTopologyWithProgressBar(args[0], config, builder.createTopology());
     }
     else {
