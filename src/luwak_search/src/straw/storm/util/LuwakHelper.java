@@ -13,11 +13,11 @@ public class LuwakHelper {
 
 	public static String extract_text(String data) {
 		// parse input JSON
-		JSONObject obj = null;
+		JSONObject obj;
 		String text = null;
 		try {
 			obj = new JSONObject(data);
-			text = obj.getString("text");	
+			text = obj.getString("text");
 		} 
 		catch (org.json.JSONException e) {
 			// TODO: Bad json passed
@@ -56,7 +56,8 @@ public class LuwakHelper {
 				for(int i=0; i<arr.length(); i++){
 					string_arry[i] = arr.getString(i);
 				}
-				qb = new MonitorQuery(RequestsHelper.generate_unique_identifier(data), "field:" + StringUtils.join(string_arry, ", "));
+				// query is lucene style, e.g. "text:term1 AND text:term2 ... "
+				qb = new MonitorQuery(RequestsHelper.generate_unique_identifier(data), "text:" + StringUtils.join(string_arry, " AND text:"));
 			}
 		}
 		return qb; 

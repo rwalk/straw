@@ -17,7 +17,7 @@ class ServicesList:
 
     def print(self):
         for v in self.services:
-            print("SERVICE: {0:<15}\tID: {1:<15}\tIP: {2:<15} PRIVATE IP:{3:<15}".format(v.tags[0]['Value'], 
+            print("SERVICE: {0:<15}\tID: {1:<15}\tIP: {2:<15} PRIVATE IP: {3:<15}".format(v.tags[0]['Value'], 
                 v.instance_id, v.public_ip_address, v.private_ip_address))
 
     def make_config_file(self, filename):
@@ -80,7 +80,3 @@ if __name__=="__main__":
     
     if args.configure:
         S.make_config_file("config.properties.tmp")
-
-
-
-

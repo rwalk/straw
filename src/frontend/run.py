@@ -12,7 +12,7 @@ if __name__=="__main__":
     parser.add_argument("--benchmark", help="Add message recieved time stamps to UI", action="store_true")    
     args = parser.parse_args()
 
-    with open("../storming_search/config/config.properties", "r") as f:
+    with open("../../config/config.properties", "r") as f:
         lines = f.readlines()
 
     config={}

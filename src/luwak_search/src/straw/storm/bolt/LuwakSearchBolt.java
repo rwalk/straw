@@ -56,8 +56,7 @@ public class LuwakSearchBolt extends BaseRichBolt {
 
 	private OutputCollector collector;
 	private Map conf;
-	private static JedisPool pool; 
-	private Jedis jedis_client;
+	private static JedisPool pool;
 	private Monitor monitor;
 	private Counter counter;
 	
@@ -68,9 +67,7 @@ public class LuwakSearchBolt extends BaseRichBolt {
 		this.collector = collector;
 		
 		// prepare the redis client
-		this.pool = new JedisPool(new JedisPoolConfig(), conf.get("redis_host").toString());
-		this.jedis_client = pool.getResource();
-		
+		pool = new JedisPool(new JedisPoolConfig(), conf.get("redis_host").toString());
 		
 		// count message throughput
 		counter = new Counter();
@@ -105,8 +102,7 @@ public class LuwakSearchBolt extends BaseRichBolt {
 
 			//register the query
 			try {
-				System.out.println(data);
-				System.out.println(query.toString());
+				// System.out.println(query.toString());
 				monitor.update(query);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -138,7 +134,12 @@ public class LuwakSearchBolt extends BaseRichBolt {
 						// System.out.println("Query: " + match.toString() + " matched document " + text);
 						// emit results
 						collector.emit(new Values(data));
-						jedis_client.publish(match.getQueryId(), text);
+						
+						// publish the result to jedis
+				        try (Jedis jedis_client = pool.getResource()) {
+				        	jedis_client.publish(match.getQueryId(), text);
+				        }
+						
 					}
 				} catch (IOException e) {
 					e.printStackTrace();

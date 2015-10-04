@@ -57,8 +57,7 @@ public class SearchBolt extends BaseRichBolt {
 	private OutputCollector collector;
 	private Map conf;
 	private TransportClient client;
-	private static JedisPool pool; 
-	private Jedis jedis_client;
+	private static JedisPool pool;
 	private Counter counter;
 
 	@SuppressWarnings("rawtypes")
@@ -67,7 +66,6 @@ public class SearchBolt extends BaseRichBolt {
 		this.conf = conf;
 		this.collector = collector;
 		SearchBolt.pool = new JedisPool(new JedisPoolConfig(), conf.get("redis_host").toString());
-		this.jedis_client = pool.getResource();
 		
 		// prepare the search engine
 		String host = conf.get("elasticsearch_host").toString();
@@ -91,7 +89,6 @@ public class SearchBolt extends BaseRichBolt {
 		// process the tuple recieved from kafka
 		String sourcename = tuple.getSourceComponent();
 		String data = tuple.getValue(0).toString();
-
 
 		// either we get a query and we need to add it to the index
 		// or we get a document and we need to do a search
@@ -154,9 +151,13 @@ public class SearchBolt extends BaseRichBolt {
 				for(PercolateResponse.Match match : response) {
 					// emit results
 					collector.emit(new Values(data));
-					jedis_client.publish(match.getId().toString(), text);					
-				}
 
+					// publish the result to jedis
+			        try (Jedis jedis_client = pool.getResource()) {
+			        	  /// ... do stuff here ... for example
+			        	jedis_client.publish(match.getId().toString(), text);
+			        }
+				}
 			}
 		}
 

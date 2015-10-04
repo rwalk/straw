@@ -4,7 +4,6 @@ import java.util.Calendar;
 import java.util.Map;
 import java.util.TimerTask;
 
-import backtype.storm.Config;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -21,21 +20,25 @@ public class ScheduledMessageCounter extends TimerTask {
 
 	private Counter counter;
 	private SimpleDateFormat tfmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
-	private Jedis jedis_client;
-	
+	private JedisPool pool;
 	
 	public ScheduledMessageCounter(Counter counter, Map conf){
 		super();
 		this.counter = counter;
-		JedisPool pool = new JedisPool(new JedisPoolConfig(), conf.get("redis_analytics_host").toString());
-		this.jedis_client = pool.getResource();
+		pool = new JedisPool(new JedisPoolConfig(), conf.get("redis_analytics_host").toString());
 	}
 	
 	@Override
 	public void run() {
 		String time_stamp = tfmt.format(Calendar.getInstance().getTime());
 		String msg = String.format("(%s, %s, %d)", time_stamp, counter.hashCode(), counter.count);
-		jedis_client.rpush("msglog", msg);
+		
+		
+		// publish the result to jedis
+        try (Jedis jedis_client = pool.getResource()) {
+        	  /// ... do stuff here ... for example
+        	jedis_client.rpush("msglog", msg);
+        }
 		
 		// reset counter
 		counter.count=0;
