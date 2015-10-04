@@ -100,6 +100,7 @@ public class LuwakSearchTopology {
     builder.setSpout("query-spout", new KafkaSpout(query_spout_config), Integer.parseInt(config.get("query.spouts").toString()));
     builder.setSpout("document-spout", new KafkaSpout(document_spout_config), Integer.parseInt(config.get("document.spouts").toString()));
     builder.setBolt("search-bolt", new LuwakSearchBolt(), Integer.parseInt(config.get("search.bolts").toString()))
+    	.setNumTasks(Integer.parseInt(config.get("search.bolt.number.tasks").toString()))
     	.allGrouping("query-spout")
     	.shuffleGrouping("document-spout");
     	
