@@ -47,10 +47,6 @@ public class LuwakSearchTopology {
 	 * 
 	 */
     ConfigurationManager config_manager = new ConfigurationManager();
-    config_manager.put("elasticsearch_host", "elasticsearch_host");
-    config_manager.put("elasticsearch_cluster_name", "elasticsearch_cluster_name");
-    config_manager.put("elasticsearch_port", "elasticsearch_port");
-    config_manager.put("index_name", "index_name");
     config_manager.put("document_type", "document_type");
     config_manager.put("kafka_query_topic", "kafka_query_topic");
     config_manager.put("kafka_document_topic", "kafka_document_topic");
@@ -64,8 +60,7 @@ public class LuwakSearchTopology {
     config_manager.put("document.spouts", "document.spouts");
     config_manager.put("query.spouts", "query.spouts");
     config_manager.put("workers", "workers");
-    
-    
+    config_manager.put("search.bolt.number.tasks", "search.bolt.number.tasks");
     Config config = config_manager.get();
 
     /*

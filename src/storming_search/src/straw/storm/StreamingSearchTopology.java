@@ -23,7 +23,6 @@ import backtype.storm.StormSubmitter;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.utils.Utils;
 import storm.kafka.*;
-import straw.storm.bolt.LuwakSearchBolt;
 import straw.storm.bolt.SearchBolt;
 import straw.storm.util.ConfigurationManager;
 
@@ -58,6 +57,7 @@ public class StreamingSearchTopology {
     config_manager.put("document.spouts", "document.spouts");
     config_manager.put("query.spouts", "query.spouts");
     config_manager.put("workers", "workers");
+    config_manager.put("search.bolt.number.tasks", "search.bolt.number.tasks");
     Config config = config_manager.get();
     
     /*

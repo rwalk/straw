@@ -126,9 +126,6 @@ public class LuwakSearchBolt extends BaseRichBolt {
 				try {
 					Matches<QueryMatch> matches = monitor.match(doc, SimpleMatcher.FACTORY);
 					
-					// we completed a search, so we need to inform the counter
-					counter.count+=1;
-					
 					//Handle the result which is the set of queries in the percolator
 					for(QueryMatch match : matches) {
 						// System.out.println("Query: " + match.toString() + " matched document " + text);
@@ -149,6 +146,9 @@ public class LuwakSearchBolt extends BaseRichBolt {
 
 		// acknowledge 
 		collector.ack(tuple);
+		
+		// we completed a search, so we need to update the counter
+		counter.count+=1;
 	}
 
 

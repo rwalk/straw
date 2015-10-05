@@ -144,9 +144,6 @@ public class SearchBolt extends BaseRichBolt {
 						.setDocumentType(conf.get("document_type").toString())
 						.setSource(docBuilder).execute().actionGet();
 
-				// update the counter
-				counter.count+=1;
-
 				//Handle the result which is the set of queries in the percolator
 				for(PercolateResponse.Match match : response) {
 					// emit results
@@ -154,7 +151,6 @@ public class SearchBolt extends BaseRichBolt {
 
 					// publish the result to jedis
 			        try (Jedis jedis_client = pool.getResource()) {
-			        	  /// ... do stuff here ... for example
 			        	jedis_client.publish(match.getId().toString(), text);
 			        }
 				}
@@ -163,8 +159,10 @@ public class SearchBolt extends BaseRichBolt {
 
 		// acknowledge 
 		collector.ack(tuple);
-	}
 
+		// update the counter
+		counter.count+=1;
+	}
 
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {

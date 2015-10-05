@@ -33,11 +33,9 @@ public class ScheduledMessageCounter extends TimerTask {
 		String time_stamp = tfmt.format(Calendar.getInstance().getTime());
 		String msg = String.format("(%s, %s, %d)", time_stamp, counter.hashCode(), counter.count);
 		
-		
-		// publish the result to jedis
+		// publish the result to jedis analytics db
         try (Jedis jedis_client = pool.getResource()) {
-        	  /// ... do stuff here ... for example
-        	jedis_client.rpush("msglog", msg);
+        	jedis_client.rpush("percolator", msg);
         }
 		
 		// reset counter
