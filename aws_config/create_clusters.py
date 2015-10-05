@@ -309,7 +309,7 @@ if __name__=="__main__":
             UserData=shellfile,
             KeyName=pemkey,
             ImageId=base_aws_image,
-            InstanceType='m4.large',
+            InstanceType='m4.xlarge',
             NetworkInterfaces=[{'SubnetId': subnet.id, 'DeviceIndex':0, 'Groups':[security_group.id], 'AssociatePublicIpAddress':True}],
             BlockDeviceMappings=[
                 {

@@ -4,7 +4,7 @@ Define the views for the straw web app
 '''
 from flask import render_template, request, render_template, jsonify, Flask
 from time import sleep
-from kafka.common import FailedPayloadsError, NotLeaderForPartitionError
+from kafka.common import FailedPayloadsError, NotLeaderForPartitionError, KafkaUnavailableError
 import md5, redis
 import json
 
@@ -52,7 +52,7 @@ def attach_views(app):
         for i in range(3):
             try:
                 app.producer.send_messages("queries", data)
-            except FailedPayloadsError, NotLeaderForPartitionError:
+            except (FailedPayloadsError, NotLeaderForPartitionError, KafkaUnavailableError) as e:
                 # wait a bit and try again
                 print("Failed to post query {0} to kafka. Try #{1}".format(data, i))
                 sleep(0.25)
