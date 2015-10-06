@@ -2,11 +2,11 @@
 '''
 Define the views for the straw web app
 '''
-from flask import render_template, request, render_template, jsonify, Flask
+from flask import render_template, session, request, render_template, jsonify, Flask, make_response
 from time import sleep
 from kafka.common import FailedPayloadsError, NotLeaderForPartitionError, KafkaUnavailableError
 import md5, redis
-import json
+import json, uuid
 
 MAX_RESULTS = 100
 
@@ -18,34 +18,51 @@ def attach_views(app):
         redis_connection = redis.Redis(connection_pool=app.pool)
 
         # update the query list in the view
-        matches = redis_connection.lrange('matches', 0, MAX_RESULTS)
+        if session.get('sid') is not None:
+            matches = redis_connection.lrange(session.get('sid'), 0, MAX_RESULTS)
         return jsonify(result=matches)
 
     @app.route('/', methods=['GET'])
     def index():
-        return render_template('index.html')
+        resp = make_response( render_template('index.html') )
+        if session.get('sid') is None:
+            session['sid'] = uuid.uuid4().hex
+        return resp
 
     @app.route('/', methods=['POST'])
-    def my_form_post():
+    def search_box_control():
+        '''add to or clear the list of queries.'''
+
+        # we need a session
+        if session.get('sid') is None:
+            raise RuntimeError("No session.")
+        sid = session.get('sid')       
+
+
         # get a redis connection
         redis_connection = redis.Redis(connection_pool=app.pool)
          
-        # TODO: clear only the current user
+        # if clear button pressed:
         if 'clear' in request.form:
-            app.subscriber.clear()
+            app.clear_user(session.get('sid'))
+            if session.has_key('queries'):
+                del session['queries']
             return render_template("index.html", query_list=[])
 
         # create a new query
         text = request.form['text'].lower().split(" ")
+
+        # generate a unique query id
         msg = {"type":"terms-query","terms":text,"minimum-match":len(text)}
         data = json.dumps(msg)
         qid = md5.new(data).hexdigest()
-        
-        # add the qid and value to the query lookup store
-        redis_connection.set(qid, text)
+        query_string = " ".join(text)
 
-        # add the query text to the users query store
-        redis_connection.lpush("queries", request.form['text'])
+        # add the qid and value to the query lookup store
+        try:
+            session['queries'].append(query_string)
+        except KeyError:
+            session['queries'] = [query_string]
 
         # try three times to do the post to kafka.
         post_success = False
@@ -61,11 +78,21 @@ def attach_views(app):
             break
 
         if post_success==True:
-            # subscribe the user to the query
-            app.subscriber.add_query(qid)
+            # subscribe the user to the query            
+            try:
+                app.user_channels[qid].add(sid)
+            except KeyError:
+                app.user_channels[qid] = set([sid])
+                app.subscriber.add_query(qid)
+
+            # link the id to the query text
+            redis_connection.set(qid, " ".join(text))
+
+            # add query to the list of things the user has subscribed to
+            redis_connection.lpush(sid +"-queries", qid)
 
         # update the query list in the view
-        query_list = redis_connection.lrange("queries", 0, -1)
+        query_list = session["queries"]
         return render_template("index.html", query_list=query_list)
 
     @app.route('/<page>')

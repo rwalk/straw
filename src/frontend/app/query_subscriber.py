@@ -15,7 +15,6 @@ class QuerySubscriber:
             of a single variable message.'''
         pool = redis.ConnectionPool(host='localhost', port=6379)
         r = redis.Redis(connection_pool=pool)
-        self._redis_db = r
         self.connection = r.pubsub(ignore_subscribe_messages=True)
         self.queries = []
         self._thread = None
@@ -49,11 +48,6 @@ class QuerySubscriber:
         except:
             pass
 
-    def clear(self):
-        self.connection.unsubscribe()
-        self.queries =[]
-        self._redis_db.flushall()
-   
 if __name__=="__main__":
     mydata = []
     subscriber = QuerySubscriber("localhost", 6379, lambda x: message_handler(mydata, x)  )
