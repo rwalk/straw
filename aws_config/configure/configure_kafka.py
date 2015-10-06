@@ -119,8 +119,9 @@ if __name__=="__main__":
 
 
     # create the documents and queries topics on one of the Kafka nodes
+    
     h = hosts[0]
-    cmd_str = ["ssh -i {0} ubuntu@{1} /usr/local/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor {2} --partitions {3} --topic documents".format(keyfile, h, 2, 3), "ssh -i {0} ubuntu@{1} /usr/local/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor {2} --partitions {3} --topic queries".format(keyfile, h, 2, 3)]
+    cmd_str = ["ssh -i {0} ubuntu@{1} /usr/local/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor {2} --partitions {3} --topic documents".format(keyfile, h, 2, 5), "ssh -i {0} ubuntu@{1} /usr/local/kafka/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor {2} --partitions {3} --topic queries".format(keyfile, h, 3, 1)]
     
     for cmd in cmd_str:
         print(cmd)
