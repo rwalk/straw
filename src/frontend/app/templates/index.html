@@ -5,9 +5,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link rel="icon" href="../../favicon.ico">
+    <meta name="description" content="platform for real-time search on streaming text data">
+    <meta name="author" content="ryan walker">
+    <link rel="icon" href="../static/assets/favicon.ico">
 
     <title>Straw -- a platform for streaming search</title>
 
@@ -42,7 +42,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="try">Try it!</a>
+          <a class="navbar-brand" href="/">Try it!</a>
         </div>
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -67,11 +67,14 @@
     <div class="page-header">
         <h2>Register a query</h2>
     </div>
+    <h4> Subscribe to real-time alerts from the (simulated) Twitter firehose. </h4>
     <form action="." method="POST">
         <input type="text" name="text" style="width: 75%">
         <input type="submit" class="btn btn-lg btn-success" value="Submit">
         <input type="submit" class="btn btn-lg btn-danger" name="clear" value="Clear All">
     </form>
+    
+    {% if query_list|length>0 %}
     <div class="page-header">
         <h2>Your Queries</h2>
     </div>
@@ -80,11 +83,9 @@
         <div> {{query}} </div>
         {% endfor %}
     </div>
-
     <div class="page-header">
         <h2>Your alerts</h2>
     </div>
-
 <script type="text/javascript"
   src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js">
 </script>
@@ -110,7 +111,7 @@
             });
 </script>
 <div id="result" align="left"></div>
-
+    {% endif %}
 
     </div> <!-- /container -->
 

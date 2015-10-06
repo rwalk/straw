@@ -24,10 +24,14 @@ def attach_views(app):
 
     @app.route('/', methods=['GET'])
     def index():
-        resp = make_response( render_template('index.html') )
+        print(session)
         if session.get('sid') is None:
             session['sid'] = uuid.uuid4().hex
-        return resp
+        try:
+            query_list = session['queries']
+        except KeyError:
+            query_list = []
+        return render_template('index.html', query_list=query_list)
 
     @app.route('/', methods=['POST'])
     def search_box_control():
@@ -95,9 +99,6 @@ def attach_views(app):
         query_list = session["queries"]
         return render_template("index.html", query_list=query_list)
 
-    @app.route('/<page>')
-    def show(page):
-        if page is None or page=="" or page=="try":
-            return render_template("index.html")
-        else:
-            return render_template('%s.html' % page)
+    @app.route('/about')
+    def about():
+        return render_template('%s.html' % 'about')
