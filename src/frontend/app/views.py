@@ -98,7 +98,7 @@ def attach_views(app):
 
         # update the query list in the view
         query_list = session["queries"]
-        return render_template("index.html", query_list=query_list)
+        return render_template("index.html", query_list=query_list, session=session)
 
     @app.route('/about')
     def about():
