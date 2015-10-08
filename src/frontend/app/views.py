@@ -24,7 +24,6 @@ def attach_views(app):
 
     @app.route('/', methods=['GET'])
     def index():
-        print(session)
         if session.get('sid') is None:
             session['sid'] = uuid.uuid4().hex
         try:
@@ -50,7 +49,7 @@ def attach_views(app):
             app.clear_user(session.get('sid'))
             if session.has_key('queries'):
                 del session['queries']
-            return render_template("index.html", query_list=[])
+            return render_template("index.html", query_list=[], session=session)
 
         # create a new query
         text = request.form['text'].lower().split(" ")
@@ -98,7 +97,7 @@ def attach_views(app):
 
         # update the query list in the view
         query_list = session["queries"]
-        return render_template("index.html", query_list=query_list, session=session)
+        return render_template("index.html", query_list=query_list)
 
     @app.route('/about')
     def about():
