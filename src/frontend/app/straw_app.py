@@ -56,13 +56,15 @@ class StrawAppBase:
 
     def clear_user(self, uid):
         redis_connection = redis.Redis(connection_pool=self.app.pool)
-        print("Trying to clean for user {0}".format(uid))
+        # print("Trying to clean for user {0}".format(uid))
         # find all the queries to which the user is subscribed
         # and remove them from the subscribers list for each query.
         for qid in redis_connection.lrange(uid+"-queries", 0, -1):
-            self.app.user_channels[qid].remove(uid)
-            print(qid)
-
+            try:
+                self.app.user_channels[qid].remove(uid)
+            except KeyError:
+                pass
+                
         # remove the user-queries
         redis_connection.delete(uid+"-queries")
 
@@ -75,6 +77,3 @@ def get_straw_app(config):
     app.clear_user = base.clear_user
     attach_views(app)
     return app
-
-
-

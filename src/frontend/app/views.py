@@ -9,7 +9,7 @@ import md5, redis
 import json, uuid
 
 MAX_RESULTS = 100
-
+EXPIRATION = 1
 def attach_views(app):
 
     @app.route('/_fetch_messages')
@@ -42,7 +42,6 @@ def attach_views(app):
             raise RuntimeError("No session.")
         sid = session.get('sid')       
 
-
         # get a redis connection
         redis_connection = redis.Redis(connection_pool=app.pool)
          
@@ -66,6 +65,8 @@ def attach_views(app):
         try:
             session['queries'].append(query_string)
         except KeyError:
+            # sanity: clear any queries stored for this user but not in the session.
+            redis_connection.delete(sid+"-queries")
             session['queries'] = [query_string]
 
         # try three times to do the post to kafka.
