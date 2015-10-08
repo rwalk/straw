@@ -26,6 +26,7 @@ wget -qO - https://packages.elastic.co/GPG-KEY-elasticsearch | apt-key add -
 echo "deb http://packages.elastic.co/elasticsearch/1.7/debian stable main" | tee -a /etc/apt/sources.list.d/elk.list
 
 ### Install Elasticsearch
+#apt-get purge elasticsearch -y
 apt-get update && sudo apt-get install elasticsearch -y
 
 ### node discovery plugin for AWS
