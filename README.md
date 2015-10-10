@@ -13,12 +13,6 @@ This project was inspired by the following excellent blog posts on streaming sea
 
 I completed this project as a Fellow in the 2015C Inisght Data Engineering Silicon Valley program.
 
-## Architechture
-The core of the platform is an Apache Storm cluster which parallelizes the work of real-time streaming search.  Internally, the Storm cluster consumes messages from a Kafka cluster and these messages are distributed to bolts which each contain a Lucene-Luwak index.  The project contains a demo flask UI which handles subscriptions with a Redis PUBSUB system.
-
-More about the architecture can be found at:
-http://straw.ryanwalker.us/about
-
 ## What's included:
 - Automated AWS cluster deployment utilities using boto3
 - Java based Storm implementation:
@@ -30,6 +24,12 @@ http://straw.ryanwalker.us/about
 - Scripts to populate document streams, including twitter API sampling utilities
 - Simple Python flask web UI
 - Testing and other utilities, including Docker components so that the entire topology can run on a local machine
+
+## Architechture
+The core of the platform is an Apache Storm cluster which parallelizes the work of real-time streaming search.  Internally, the Storm cluster consumes messages from a Kafka cluster and these messages are distributed to bolts which each contain a Lucene-Luwak index.  The project contains a demo flask UI which handles subscriptions with a Redis PUBSUB system.
+
+More about the architecture can be found at:
+http://straw.ryanwalker.us/about
 
 ## Getting started
 ### Running locally
