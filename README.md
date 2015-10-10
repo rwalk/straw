@@ -1,11 +1,23 @@
 # straw
 A platform for real-time streaming search
 
-The goal of this project is to provide a clean, scalable architecture for real-time search on streaming data.
+The goal of this project is to provide a clean, scalable architecture for real-time search on streaming data.  Additionally, the project contains utilities to provide some very simple throughput benchmarking of Elasticsearch Percolators vs Lucence-Luwak.  Preliminary benchmarks may be found in:
 
-Some great resources on streaming search:
+http://straw.ryanwalker.us/about
+
+Comments and critiques about these benchmarks are greatly appreciated!
+
+This project was inspired by the following excellent blog posts on streaming search: 
 - http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/
 - http://www.flax.co.uk/blog/2015/07/27/a-performance-comparison-of-streamed-search-implementations/
+
+I completed this project as a Fellow in the 2015C Inisght Data Engineering Silicon Valley program.
+
+## Architechture
+The core of the platform is an Apache Storm cluster which parallelizes the work of real-time streaming search.  Internally, the Storm cluster consumes messages from a Kafka cluster and these messages are distributed to bolts which each contain a Lucene-Luwak index.  The project contains a demo flask UI which handles subscriptions with a Redis PUBSUB system.
+
+More about the architecture can be found at:
+http://straw.ryanwalker.us/about
 
 ## What's included:
 - Automated AWS cluster deployment utilities using boto3
@@ -53,7 +65,5 @@ sudo apt-get install redis-server
 sudo vi /etc/redis/redis.conf
 ```
 If you want to use a seperate redis instance for benchmarking, you should repeat the above step on a different AWS machine.  [FEATURE: Add the redis config to the deployment scripts.]
-
-### Submitting/running the topology on the storm cluster
 
 
