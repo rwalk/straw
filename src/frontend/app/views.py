@@ -24,7 +24,6 @@ def attach_views(app):
 
     @app.route('/', methods=['GET'])
     def index():
-        print(session)
         if session.get('sid') is None:
             session['sid'] = uuid.uuid4().hex
         try:
@@ -103,3 +102,8 @@ def attach_views(app):
     @app.route('/about')
     def about():
         return render_template('%s.html' % 'about')
+
+
+    @app.route('/straw.pdf')
+    def pdf():
+        return app.send_static_file('assets/straw.pdf')
