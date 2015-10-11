@@ -5,6 +5,7 @@
 
 import argparse
 from kafka import SimpleProducer, KafkaClient
+from time import sleep
 
 def chunk_iterable(A,n):
     '''An iterable that contains the iterates of A divided into lists of size n.
@@ -33,6 +34,7 @@ if __name__=="__main__":
     parser.add_argument("topic", help="Kafka topic to feed")
     parser.add_argument("-p", "--port", default=9092, help="port for zookeeper, default 9092")
     parser.add_argument("-c", "--chunksize", default=100, help="Number of messages to send at one time,  default 100")    
+    parser.add_argument("-d", "--delay", default=0, help="Delay in ms between shipment of chunks to Kafka, default 0")
     args = parser.parse_args()
 
     # get a client
@@ -45,3 +47,4 @@ if __name__=="__main__":
         for chunk in chunk_iterable(f, args.chunksize):
             print("Sending {0} messages to topic {1} on {2}".format(len(chunk), args.topic, args.host))
             producer.send_messages(args.topic, *chunk)
+            sleep(1.0*int(args.delay)/1000.0)
