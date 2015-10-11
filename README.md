@@ -101,4 +101,39 @@ sudo vi /etc/redis/redis.conf
 ```
 If you want to use a seperate redis instance for benchmarking, you should repeat the above step on a different AWS machine.  [FEATURE: Add the redis config to the deployment scripts.]
 
+## Benchmarking and simulation
+A goal of straw project was to allow for benchmarking of the Lucene-Luwak package in a distributed context.  
+
+### Measuring throughput
+I measure throughput through the search bolts of the Storm cluster in simple way.  Start a stopwatch in a background thread.  Each bolt has a counter which get incremented each time a document gets checked against the search engine.  When the stopwatch hits 10 seconds, collect the data from each counter, publish the result to a redis DB, and reset the counter.
+
+### Generating/simulating data
+For benchmarking and simulations, you'll need a way to generate tweets and queries. For this purpose, I've added many tools to the `straw/utils` directory.  In particular, the scripts
+```
+./kafka_add_documents
+./kafka_add_queries
+```
+can be used to add documents and queries from sample files.  Some small example data files are found in ```straw/data```.  For long running simultion, you can run ```./kafka_add_documents.sh``` in a cronjob, to periodically put documents into the Kafka cluster.  NOTE: Kafka has been configured to purge documents after 1 hour.
+
+You can easily harvest your own tweet data from the Twitter api. Try the following helper script which uses Twython to read from the Twitter streaming sample API:
+```
+./tweet_sampler.py --help
+```
+You'll need to export your twitter credentials as inviornment variables to run this and other scripts, e.g.
+```
+source my_twitter_credentials
+```
+where `my_twitter_credentials` looks like
+```
+export TWITTER_ACCESS_TOKEN=...
+export TWITTER_SECRET_TOKEN=...
+export TWITTER_CONSUMER_TOKEN=...
+export TWITTER_CONSUMER_SECRET=...
+
+```
+To generate reasonably complex queries, the included query maker utility might be helpful
+```
+./query_maker.py --help
+```
+this script takes a sample of tweets and uses NLTK to compute bigram frequencies.  The most frequent bigram are then converted into queries that Straw can parse.  For ease of use, I've included `data/queries.bigrams` in  the repo.  This is a collection of 100,000 generated bigram queries collected from a sample of 20 million tweets.
 
