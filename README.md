@@ -45,18 +45,39 @@ Prerequisites: You need
 1. The aws cli
 2. Python boto3
 3. Set your default configurations by calling "aws configure"
+4. Modify the settings in `straw_service_config.sh` to your own AWS account information.
 
 Steps:
-1) cd src/aws_config
-2) run ./create_clusters.py --help to get instructions about this AWS creation script and follow instructions.  You may
-wish to edit a few things in this file, such as the tag_prefix which gives a unique custom prefix to each service.
-3) src/aws_config/configure contains scripts to configure each of the individual services; you'll need to run each of these to configure the resource.
-
-Once resources are created, you can run
+1. `cd src/aws_config`
+2. `/create_clusters.py --help` to get instructions about this AWS creation script and follow instructions.
+3. Once all resources are created, `cd configure`. This directory contains scripts to configure each of the individual services; you'll need to run each of these to configure the resource, e.g. `./configure_elasticsearch`.
+4. Once resources are created, run
 ```
 ./discover.py
 ```
-NOTE: You should modify the tag-prefix in this file to match the tag prefix you've set elsewhere. [FEATURE: Tag should be set in a GLOBAL CONFIG file.]
+to see the list of services and their IPs.
+5. To submit or run topologies, you need to install storm on your machine (or, even better, on a dedicted machine within the subnet of the Storm cluster).  Install storm as follows:
+```
+sudo apt-get update
+sudo apt-get install openjdk-7-jdk
+wget http://mirrors.gigenet.com/apache/storm/apache-storm-0.9.5/apache-storm-0.9.5.tar.gz -P ~/Downloads
+sudo tar zxvf ~/Downloads/apache-storm*.gz -C /usr/local
+sudo mv /usr/local/apache-storm* /usr/local/storm
+```
+Then `vi /usr/local/storm/config/storm.yml` and add the line
+```nimbus.host: 10.X.X.X```
+using either your private or public IP for the nimus node. If you use a public IP, you need to update the security group.  If you use a private IP, you need to be running from within the subnet.
+6. You should now switch into the source directory of either the Luwak or Elasticsearch topology and build the topology, e.g.
+```
+cd /home/ubuntu/straw/src/luwak_search
+mvn clean
+mvn package
+```
+7. Finally, you can submit the topology to the cluster (whose nimbus node was specified in step 5) by executing
+```
+./submit_topology.sh
+```
+
 
 ### Configuring Redis
 Install redis on same server as UI and modify the bind interface redis conf -- set bind 0.0.0.0.
