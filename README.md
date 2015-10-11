@@ -36,18 +36,23 @@ http://straw.ryanwalker.us/about
 1. install docker-compose and redis-server
 2. run src/util/stage_demo_mode.sh  This will create dockers for Kafka with Zookeeper and Elasticsearch and will populate these services with some example data.  [BUG: You may have to run this script twice!]
 3. cd src/storming_search OR src/luwak_search
-4. run mvn package
-5. ./run_search_topology.sh [BUG: You need to push lots of documents to Kafka or you'll get an error]
+4. run `mvn package`
+5. `./run_search_topology.sh` [BUG: You need to push lots of documents to Kafka or you'll get an error]
 6. In a seperate terminal, activate the frontend by calling ./run.py from src/frontend
 
 ### Deploy to AWS
-Prerequisites: You need
-1. The aws cli
-2. Python boto3
-3. Set your default configurations by calling "aws configure"
-4. Modify the settings in `straw_service_config.sh` to your own AWS account information.
+#### Prequesites:
 
-Steps:
+1. Install the aws cli
+2. Install Python boto3
+3. Set your default configurations by calling "aws configure"
+4. Modify the settings in `straw_service_config.sh` to your own AWS account information and then
+```
+source straw_service_config.sh
+```
+
+####Steps:
+
 1. `cd src/aws_config`
 2. `/create_clusters.py --help` to get instructions about this AWS creation script and follow instructions.
 3. Once all resources are created, `cd configure`. This directory contains scripts to configure each of the individual services; you'll need to run each of these to configure the resource, e.g. `./configure_elasticsearch`.
@@ -56,7 +61,9 @@ Steps:
 ./discover.py
 ```
 to see the list of services and their IPs.
-5. To submit or run topologies, you need to install storm on your machine (or, even better, on a dedicted machine within the subnet of the Storm cluster).  Install storm as follows:
+
+####Submitting topologies
+To submit or run topologies, you need to install storm on your machine (or, even better, on a dedicted machine within the subnet of the Storm cluster).  Install storm as follows:
 ```
 sudo apt-get update
 sudo apt-get install openjdk-7-jdk
@@ -64,9 +71,10 @@ wget http://mirrors.gigenet.com/apache/storm/apache-storm-0.9.5/apache-storm-0.9
 sudo tar zxvf ~/Downloads/apache-storm*.gz -C /usr/local
 sudo mv /usr/local/apache-storm* /usr/local/storm
 ```
-Then `vi /usr/local/storm/config/storm.yml` and add the line
+Then edit `/usr/local/storm/config/storm.yaml` by adding the line
 ```nimbus.host: 10.X.X.X```
-using either your private or public IP for the nimus node. If you use a public IP, you need to update the security group.  If you use a private IP, you need to be running from within the subnet.
+using either your private or public IP for the nimbus node. If you use a public IP, you need to update the security group.  If you use a private IP, you need to be running from within the subnet.
+
 6. You should now switch into the source directory of either the Luwak or Elasticsearch topology and build the topology, e.g.
 ```
 cd /home/ubuntu/straw/src/luwak_search
