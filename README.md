@@ -75,13 +75,19 @@ Then edit `/usr/local/storm/config/storm.yaml` by adding the line
 ```nimbus.host: 10.X.X.X```
 using either your private or public IP for the nimbus node. If you use a public IP, you need to update the security group.  If you use a private IP, you need to be running from within the subnet.
 
-6. You should now switch into the source directory of either the Luwak or Elasticsearch topology and build the topology, e.g.
+Next, you need to tell storm where all of your cluster resources reside.  To do this,
+```
+vi straw/config/config.properties
+```
+Enter the private IPs of your system resources, following this template.  We are assuming that all of the resources live on the same subnet in the cluster.
+
+You should now switch into the source directory of either the Luwak or Elasticsearch topology and build the topology, e.g.
 ```
 cd /home/ubuntu/straw/src/luwak_search
 mvn clean
 mvn package
 ```
-7. Finally, you can submit the topology to the cluster (whose nimbus node was specified in step 5) by executing
+Finally, you can submit the topology to the cluster (whose nimbus node was specified in step 5) by executing
 ```
 ./submit_topology.sh
 ```
