@@ -6,12 +6,11 @@ import boto3, os, argparse, sys
 sys.path.append("..")
 from botocore.exceptions import ClientError as BotoClientError
 from time import sleep
-from create_clusters import get_tag
+from create_clusters import get_tag, keyfile
 from config_utils import quiet_wrap
 
 # configuration
-keyfile = "/home/ryan/projects/insight/accounts/rwalker.pem"
-my_instances_filters = [{ 'Name': 'instance-state-name', 'Values': ['running']}, {'Name':'tag-value', 'Values':['rwalker-storm-node']}]
+my_instances_filters = [{ 'Name': 'instance-state-name', 'Values': ['running']}, {'Name':'tag-value', 'Values':[get_tag('storm-node')]}]
 
 if __name__=="__main__":
     

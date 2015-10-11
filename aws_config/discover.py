@@ -3,7 +3,7 @@
 #   Discover straw cluster resources running on AWS
 #
 import boto3, argparse
-from create_clusters import services, get_tag
+from create_clusters import services, get_tag, keyfile
 
 class ServicesList:
     '''Container class for AWS services info'''

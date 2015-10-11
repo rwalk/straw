@@ -11,13 +11,13 @@ from time import sleep
 #############################
 # CONFIG
 #############################
-
-# access info
-keyfile = "/home/ryan/projects/insight/accounts/rwalker.pem"
-pemkey = 'rwalker'
-
-# since it's a shared account, add this unique prefix to all tags
-tag_prefix = "rwalker-"
+try:
+    keyfile = os.environ["AWS_PEM_FILE"]
+    pemkey=os.environ["PEM_KEY"]
+    tag_prefix = os.environ["TAG_PREFIX"]
+except KeyError as e:
+    print("Can't find PEM and/or tag ENV variable. You must export values for AWS_PEM FILE and TAG_PREFIX.")
+    raise e
 
 # network settings -- only single subnet right now
 vpc_cidr = "10.0.0.0/27"
@@ -45,7 +45,7 @@ services = ['kafka', 'elasticsearch', 'storm', 'flask']
 # helper methods
 def get_tag(name):
     # all service tags will be prefixed with the "tag_prefix" value
-    return (tag_prefix + name)
+    return (tag_prefix + "-" + name)
 
 
 ###############################
@@ -93,10 +93,8 @@ if __name__=="__main__":
     else:
         subnet = ec2.Subnet(subnetid)
 
-    #
-    # Create a gateway and attach to vpc
-    #
-    gatwayid = None
+    # Find the gateway id; gateway is automatically created with the subnet?
+    gatewayid = None
     for v in vpc.internet_gateways.filter(Filters=[{'Name':'tag-value','Values':[get_tag('gateway')]}]):
         gatewayid = v.id
     if gatewayid is None: 

@@ -3,13 +3,14 @@
 #   Configure Kafka on ec2 instances
 #
 
-import boto3, os
+import boto3, os, sys
 from botocore.exceptions import ClientError as BotoClientError
 from time import sleep
+sys.path.append("..")
+from create_clusters import get_tag, keyfile
 
 # configuration
-keyfile = "/home/ryan/projects/insight/accounts/rwalker.pem"
-my_instances_filters = [{ 'Name': 'instance-state-name', 'Values': ['running']}, {'Name':'tag-value', 'Values':['rwalker-kafka-node']}]
+my_instances_filters = [{ 'Name': 'instance-state-name', 'Values': ['running']}, {'Name':'tag-value', 'Values':[get_tag('kafka-node')]}]
 
 if __name__=="__main__":
     
