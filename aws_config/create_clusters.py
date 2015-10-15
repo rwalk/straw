@@ -34,12 +34,13 @@ kafka_initfile = os.path.join(path, "kafka_install.sh")
 elasticsearch_initfile = os.path.join(path, "elasticsearch_install.sh")
 storm_initfile = os.path.join(path, "storm_install.sh")
 flask_initfile = os.path.join(path, "flask_install.sh")
+spark_initfile = os.path.join(path, "spark_install.sh")
 
 # base AWS settings
 base_aws_image = 'ami-5189a661'
 
 # services
-services = ['kafka', 'elasticsearch', 'storm', 'flask']
+services = ['kafka', 'elasticsearch', 'storm', 'flask', 'spark']
 
 ###############################
 # helper methods
@@ -329,20 +330,20 @@ if __name__=="__main__":
             v.create_tags(Tags=[{'Key':'Name', 'Value':get_tag(tag)}])
             print("SERVICE: {0:<15}\tID: {1:<15}\tIP: {2:<15}\tDNS: {3:<15}".format(tag, v.instance_id, v.public_ip_address, v.public_dns_name))
 
-    if args.service.lower() in ['all', 'flask']:
+    if args.service.lower() in ['all', 'spark']:
         #########################################
-        #   flask webserver
+        #   Spark
         #########################################
-        print("Creating Flask webserver...")
+        print("Creating Spark Cluster...")
         #
         #   EC2 Instances
         #
-        shellcodefile=os.path.abspath(flask_initfile)
+        shellcodefile=os.path.abspath(spark_initfile)
         shellfile = open(shellcodefile,'r').read()
         pemfile =os.path.abspath(keyfile)
         instances = ec2.create_instances(
-            MinCount=1,
-            MaxCount=1,
+            MinCount=4,
+            MaxCount=4,
             UserData=shellfile,
             KeyName=pemkey,
             ImageId=base_aws_image,
@@ -361,10 +362,50 @@ if __name__=="__main__":
         )
 
         # tag instances and assign a public ip
-        tag='flask-node'
+        tag='spark-node'
         print("Sleep 60 seconds to give instances time to configure...")
         sleep(60)
         for v in instances:
             v.create_tags(Tags=[{'Key':'Name', 'Value':get_tag(tag)}])
             print("SERVICE: {0:<15}\tID: {1:<15}\tIP: {2:<15}\tDNS: {3:<15}".format(tag, v.instance_id, v.public_ip_address, v.public_dns_name))
+
+    if args.service.lower() in ['all', 'storm']:
+        #########################################
+        #   STORM CLUSTER
+        #########################################
+        print("Creating a Storm cluster...")
+        #
+        #   EC2 Instances
+        #
+        shellcodefile=os.path.abspath(storm_initfile)
+        shellfile = open(shellcodefile,'r').read()
+        pemfile =os.path.abspath(keyfile)
+        instances = ec2.create_instances(
+            MinCount=storm_instances,
+            MaxCount=storm_instances,
+            UserData=shellfile,
+            KeyName=pemkey,
+            ImageId=base_aws_image,
+            InstanceType='m4.xlarge',
+            NetworkInterfaces=[{'SubnetId': subnet.id, 'DeviceIndex':0, 'Groups':[security_group.id], 'AssociatePublicIpAddress':True}],
+            BlockDeviceMappings=[
+                {
+                    'VirtualName': 'ephemeral0',
+                    'DeviceName': '/dev/sda1',
+                    'Ebs': {
+                        'VolumeSize': 64,
+                        'VolumeType': 'gp2'        # standard for magnetic, gp2 for SSD
+                    }
+                }
+            ]
+        )
+
+        # tag instances and assign a public ip
+        tag='storm-node'
+        print("Sleep 60 seconds to give instances time to configure...")
+        sleep(60)
+        for v in instances:
+            v.create_tags(Tags=[{'Key':'Name', 'Value':get_tag(tag)}])
+            print("SERVICE: {0:<15}\tID: {1:<15}\tIP: {2:<15}\tDNS: {3:<15}".format(tag, v.instance_id, v.public_ip_address, v.public_dns_name))
+
 
