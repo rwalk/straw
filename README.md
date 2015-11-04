@@ -2,6 +2,24 @@ straw
 =================
 A platform for real-time streaming search
 
+#### Table of Contents
+  * [Overview](#overview)
+  * [What's included:](#whats-included)
+  * [Architecture](#architecture)
+  * [Getting started](#getting-started)
+    * [Running locally](#running-locally)
+    * [Deploy to AWS](#deploy-to-aws)
+      * [Prerequisites:](#prerequisites)
+      * [Steps:](#steps)
+      * [Submitting topologies](#submitting-topologies)
+    * [Configuring Redis](#configuring-redis)
+  * [Benchmarking and simulation](#benchmarking-and-simulation)
+    * [Measuring throughput](#measuring-throughput)
+    * [Generating/simulating data](#generatingsimulating-data)
+
+
+
+
 ## Overview
 The goal of this project is to provide a clean, scalable architecture for real-time search on streaming data.  Additionally, the project contains utilities to provide some very simple throughput benchmarking of Elasticsearch Percolators vs Lucence-Luwak.  Preliminary benchmarks may be found in:
 
