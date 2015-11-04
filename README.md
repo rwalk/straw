@@ -45,6 +45,7 @@ UPDATE: I've added utility scripts to make launching the demo mode a bit simpler
 7. Type "Justin Bieber" or some other common twitter query (only 100k unique documents can be found in the mock stream).
 
 For reference, here are the old step by step launch instructions:
+
 1. install [docker-compose](http://docs.docker.com/compose/install/) and redis-server
 2. run util/stage_demo_mode.sh  This will create dockers for Kafka with Zookeeper and Elasticsearch and will populate these services with some example data.  [BUG: You may have to run this script twice!]
 3. cd src/storming_search OR src/luwak_search depending on which flavor of search you want to build
