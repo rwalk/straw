@@ -5,9 +5,20 @@
 #
 #   NOTE: You will need to install docker manually, using at least version 1.8.0.
 #
+#   DOCKER INSTALL INSTRUCTIONS from http://docs.docker.com/engine/installation/ubuntulinux/
+#	
+#   sudo apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+#   sudo vi /etc/apt/sources.list.d/docker.list
+#   Add the line "deb https://apt.dockerproject.org/repo ubuntu-trusty main" and save
+#   sudo apt-get install docker-engine
+#   sudo service docker start
+#   sudo usermod -aG docker $USER
+#   Log out and log in again
+
 
 # redis
-sudo apt-get install redis-server
+sudo apt-get update
+sudo apt-get install redis-server python3-pip python-pip maven openjdk-7-jdk
 
 # docker compose
 ( 
