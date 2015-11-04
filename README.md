@@ -13,6 +13,12 @@ This project was inspired by the following excellent blog posts on streaming sea
 
 I completed this project as a Fellow in the 2015C Inisght Data Engineering Silicon Valley program.
 
+The typical use case for a streaming search system involves many users who are interested in running Lucene style queries against streaming data source in real-time.  For example, investors might want to register queries for positive or negative mentions about companies in the twitter firehose.  This project provides a base architecture for such a system.  In particular, it aims to support:
+
+- Many diverse users registering queries
+- Full Lucene query capabilities against streaming text sources
+- Scaling in both the volume of data and in the number of queries
+
 ## What's included:
 - Automated AWS cluster deployment utilities using boto3
 - Java based Storm implementation:
@@ -27,6 +33,13 @@ I completed this project as a Fellow in the 2015C Inisght Data Engineering Silic
 
 ## Architechture
 The core of the platform is an Apache Storm cluster which parallelizes the work of real-time streaming search.  Internally, the Storm cluster consumes messages from a Kafka cluster and these messages are distributed to bolts which each contain a Lucene-Luwak index.  The project contains a demo flask UI which handles subscriptions with a Redis PUBSUB system.
+
+The key layers of the system are:
+
+- Real-time ingestion via Kafka from a streaming source (e.g. Twitter firehose)
+- Storm cluster to distribute tweets from Kafka to workers.  Each worker contains a Lucene instance with Luwak.
+- Publish-Subscribe system (Redis) which recieves matches and delievers them back to the application server
+- Application server (Python Flask) who registers queries from the users and serves matches
 
 More about the architecture can be found at:
 http://straw.ryanwalker.us/about
