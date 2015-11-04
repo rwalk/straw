@@ -1,6 +1,8 @@
-# straw
+straw
+=================
 A platform for real-time streaming search
 
+## Overview
 The goal of this project is to provide a clean, scalable architecture for real-time search on streaming data.  Additionally, the project contains utilities to provide some very simple throughput benchmarking of Elasticsearch Percolators vs Lucence-Luwak.  Preliminary benchmarks may be found in:
 
 http://straw.ryanwalker.us/about
@@ -45,6 +47,9 @@ More about the architecture can be found at:
 http://straw.ryanwalker.us/about
 
 ## Getting started
+
+There are two options for running straw.  For development, you can run a mini version of the entire platform on a single local machine. In local mode, dependent services run in Dockers.  For production, you can deploy the system to the cloud.  The project supports a fully automated deployment to AWS with fully customizable cluster configurations.  
+
 ### Running locally
 
 Minimum supported requirements: Ubuntu 14.04 with Docker 1.8.0 or better
