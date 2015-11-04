@@ -34,14 +34,17 @@ http://straw.ryanwalker.us/about
 ## Getting started
 ### Running locally
 
-UPDATE: I've added a utility script to make launching the demo mode a bit simpler.  Now, you can just do the following steps:
+UPDATE: I've added utility scripts to make launching the demo mode a bit simpler.  Now, you can just do the following steps:
 
-1. Install [docker-compose](http://docs.docker.com/compose/install/) and redis-server
-2. Execute `./run_local_demo.sh.  This will run continuously, simulating the pipeline of streaming tweets into the cluster. 
-3. In a separate browser, launch the UI by calling `cd src/frontend` and `./run.py`
+1. PREREQUISITES: Install [docker-compose](http://docs.docker.com/compose/install/), redis-server, python-flask, and flask-ext-session.
+2. `cd local_demo`
+3. run `./launch_local_cluster.sh`
+4. In a separate shell, run `./launch_demo_ui.sh`
+5. In a separate shell, run `./mock_firehose.sh`
+6. Open a web broser and point to http://localhost:5000
+7. Type "Justin Bieber" or some other common twitter query (only 100k unique documents can be found in the mock stream).
 
-Here are the step by step launch instructions:
-
+For reference, here are the old step by step launch instructions:
 1. install [docker-compose](http://docs.docker.com/compose/install/) and redis-server
 2. run util/stage_demo_mode.sh  This will create dockers for Kafka with Zookeeper and Elasticsearch and will populate these services with some example data.  [BUG: You may have to run this script twice!]
 3. cd src/storming_search OR src/luwak_search depending on which flavor of search you want to build
