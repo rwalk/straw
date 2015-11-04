@@ -11,9 +11,9 @@ This project was inspired by the following excellent blog posts on streaming sea
 - http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/
 - http://www.flax.co.uk/blog/2015/07/27/a-performance-comparison-of-streamed-search-implementations/
 
-I completed this project as a Fellow in the 2015C Inisght Data Engineering Silicon Valley program.
+I completed this project as a Fellow in the 2015C Insight Data Engineering Silicon Valley program.
 
-The typical use case for a streaming search system involves many users who are interested in running Lucene style queries against streaming data source in real-time.  For example, investors might want to register queries for positive or negative mentions about companies in the twitter firehose.  This project provides a base architecture for such a system.  In particular, it aims to support:
+The typical use case for a streaming search system involves many users who are interested in running Lucene style queries against a streaming data source in real-time.  For example, investors might want to register queries for positive or negative mentions about companies in the twitter firehose.  This project provides a base architecture for such a system.  In particular, it aims to support:
 
 - Many diverse users registering queries
 - Full Lucene query capabilities against streaming text sources
@@ -47,17 +47,19 @@ http://straw.ryanwalker.us/about
 ## Getting started
 ### Running locally
 
+Minimum supported requirements: Ubuntu 14.04 with Docker 1.8.0 or better
+
 UPDATE: I've added utility scripts to make launching the demo mode a bit simpler.  Now, you can just do the following steps:
 
-1. PREREQUISITES: Install [docker-compose](http://docs.docker.com/compose/install/), redis-server, python-flask, and flask-ext-session.
-2. `cd local_demo`
+1. `cd local_demo`
+2. Install the prerequisites: `./prerequisites.sh`
 3. run `./launch_local_cluster.sh`
 4. In a separate shell, run `./launch_demo_ui.sh`
 5. In a separate shell, run `./mock_firehose.sh`
-6. Open a web broser and point to http://localhost:5000
+6. Open a web broser and point to [http://localhost:5000](http://localhost:5000)
 7. Type "Justin Bieber" or some other common twitter query (only 100k unique documents can be found in the mock stream).
 
-For reference, here are the old step by step launch instructions:
+For reference, here are the old step=by-step launch instructions:
 
 1. install [docker-compose](http://docs.docker.com/compose/install/) and redis-server
 2. run util/stage_demo_mode.sh  This will create dockers for Kafka with Zookeeper and Elasticsearch and will populate these services with some example data.  [BUG: You may have to run this script twice!]
@@ -65,16 +67,16 @@ For reference, here are the old step by step launch instructions:
 4. run `mvn package`
 5. run `./run_luwak_topology.sh`.  This will start the local storm cluster with the Luwak topology.
 6. In a seperate terminal, start the webserver frontend by calling ./run.py from src/frontend
-7. Open a browser and point to the frontend UI.  By default: http://localhost:5000
-8. Enter a query that will likely generate lots of hits e.g. "Justin Bieber".  Note: there are only 100,000k sampled tweeets included with the repo but there are utility scripts for collecting more.
+7. Open a browser and point to the frontend UI.  By default: [http://localhost:5000](http://localhost:5000)
+8. Enter a query that will likely generate lots of hits e.g. "Justin Bieber".  Note: there are only 100k sampled tweeets included with the repo but there are utility scripts for collecting more.
 9. To start a simulated tweet stream, `cd util` and `./kafka_add_documents.sh`.
 
 ### Deploy to AWS
 #### Prequesites:
 
-1. Install the aws cli
-2. Install Python boto3
-3. Set your default configurations by calling "aws configure"
+1. Install the aws cli: `sudo apt-get install awscli`
+2. Install Python boto3: `sudo pip3 install boto3`
+3. Set your default configurations by calling `aws configure`
 4. Modify the settings in `aws_config/straw_service_config.sh` to your own AWS account information and then
 ```
 source straw_service_config.sh
@@ -123,15 +125,18 @@ Finally, you can submit the topology to the cluster (whose nimbus node was speci
 
 
 ### Configuring Redis
-Install redis on same server as UI and modify the bind interface redis conf -- set bind 0.0.0.0.
+The included webserver and the query result pipeline both rely on Redis as a publish-subscribe system.  Redis can also be used to collect the benchmarking statistics for profiling Luwak and Elasticsearch.
+
+Install redis on the same server as the webserver and modify the bind interface:
 ```
+# set bind 0.0.0.0 in redis.conf:
 sudo apt-get install redis-server
 sudo vi /etc/redis/redis.conf
 ```
-If you want to use a seperate redis instance for benchmarking, you should repeat the above step on a different AWS machine.  [FEATURE: Add the redis config to the deployment scripts.]
+If you want to use a seperate redis instance for the benchmarking, you should repeat the above step on a different AWS machine and update the global configuration `config/config.properties`.
 
 ## Benchmarking and simulation
-A goal of straw project was to allow for benchmarking of the Lucene-Luwak package in a distributed context.  
+A goal of the straw project was to allow for benchmarking of the Lucene-Luwak package in a distributed context.  
 
 ### Measuring throughput
 I measure throughput through the search bolts of the Storm cluster in simple way.  Start a stopwatch in a background thread.  Each bolt has a counter which get incremented each time a document gets checked against the search engine.  When the stopwatch hits 10 seconds, collect the data from each counter, publish the result to a redis DB, and reset the counter.
@@ -160,9 +165,9 @@ export TWITTER_CONSUMER_TOKEN=...
 export TWITTER_CONSUMER_SECRET=...
 
 ```
-To generate reasonably complex queries, the included query maker utility might be helpful
+To generate many reasonably complex queries for the benchmarking studies, the included query maker utility might be helpful
 ```
 ./query_maker.py --help
 ```
-this script takes a sample of tweets and uses NLTK to compute bigram frequencies.  The most frequent bigram are then converted into queries that Straw can parse.  For ease of use, I've included `data/queries.bigrams` in  the repo.  This is a collection of 100,000 generated bigram queries collected from a sample of 20 million tweets.
+This script takes a sample of tweets and uses NLTK to compute bigram frequencies.  The most frequent bigram are then converted into queries that Straw can parse.  For ease of use, I've included `data/queries.bigrams` in  the repo.  This is a collection of 100,000 generated bigram queries collected from a sample of 20 million tweets.
 
