@@ -33,12 +33,28 @@ http://straw.ryanwalker.us/about
 
 ## Getting started
 ### Running locally
-1. install docker-compose and redis-server
-2. run src/util/stage_demo_mode.sh  This will create dockers for Kafka with Zookeeper and Elasticsearch and will populate these services with some example data.  [BUG: You may have to run this script twice!]
-3. cd src/storming_search OR src/luwak_search
+
+UPDATE: I've added utility scripts to make launching the demo mode a bit simpler.  Now, you can just do the following steps:
+
+1. PREREQUISITES: Install [docker-compose](http://docs.docker.com/compose/install/), redis-server, python-flask, and flask-ext-session.
+2. `cd local_demo`
+3. run `./launch_local_cluster.sh`
+4. In a separate shell, run `./launch_demo_ui.sh`
+5. In a separate shell, run `./mock_firehose.sh`
+6. Open a web broser and point to http://localhost:5000
+7. Type "Justin Bieber" or some other common twitter query (only 100k unique documents can be found in the mock stream).
+
+For reference, here are the old step by step launch instructions:
+
+1. install [docker-compose](http://docs.docker.com/compose/install/) and redis-server
+2. run util/stage_demo_mode.sh  This will create dockers for Kafka with Zookeeper and Elasticsearch and will populate these services with some example data.  [BUG: You may have to run this script twice!]
+3. cd src/storming_search OR src/luwak_search depending on which flavor of search you want to build
 4. run `mvn package`
-5. `./run_search_topology.sh` [BUG: You need to push lots of documents to Kafka or you'll get an error]
-6. In a seperate terminal, activate the frontend by calling ./run.py from src/frontend
+5. run `./run_luwak_topology.sh`.  This will start the local storm cluster with the Luwak topology.
+6. In a seperate terminal, start the webserver frontend by calling ./run.py from src/frontend
+7. Open a browser and point to the frontend UI.  By default: http://localhost:5000
+8. Enter a query that will likely generate lots of hits e.g. "Justin Bieber".  Note: there are only 100,000k sampled tweeets included with the repo but there are utility scripts for collecting more.
+9. To start a simulated tweet stream, `cd util` and `./kafka_add_documents.sh`.
 
 ### Deploy to AWS
 #### Prequesites:
@@ -46,15 +62,15 @@ http://straw.ryanwalker.us/about
 1. Install the aws cli
 2. Install Python boto3
 3. Set your default configurations by calling "aws configure"
-4. Modify the settings in `straw_service_config.sh` to your own AWS account information and then
+4. Modify the settings in `aws_config/straw_service_config.sh` to your own AWS account information and then
 ```
 source straw_service_config.sh
 ```
 
 ####Steps:
 
-1. `cd src/aws_config`
-2. `/create_clusters.py --help` to get instructions about this AWS creation script and follow instructions.
+1. `cd aws_config`
+2. `./create_clusters.py --help` to get instructions about this AWS creation script and follow instructions.
 3. Once all resources are created, `cd configure`. This directory contains scripts to configure each of the individual services; you'll need to run each of these to configure the resource, e.g. `./configure_elasticsearch`.
 4. Once resources are created, run
 ```
@@ -77,7 +93,7 @@ using either your private or public IP for the nimbus node. If you use a public 
 
 Next, you need to tell storm where all of your cluster resources reside.  To do this,
 ```
-vi straw/config/config.properties
+vi config/config.properties
 ```
 Enter the private IPs of your system resources, following this template.  We are assuming that all of the resources live on the same subnet in the cluster.
 
