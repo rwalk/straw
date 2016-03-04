@@ -21,11 +21,9 @@ A platform for real-time streaming search
 
 
 ## Overview
-The goal of this project is to provide a clean, scalable architecture for real-time search on streaming data.  Additionally, the project contains utilities to provide some very simple throughput benchmarking of Elasticsearch Percolators vs Lucence-Luwak.  Preliminary benchmarks may be found in:
+The goal of this project is to provide a clean, scalable architecture for real-time search on streaming data.  Additionally, the project contains utilities to provide some very simple throughput benchmarking of Elasticsearch Percolators vs Lucence-Luwak.  A full writeup of the project can be found at:
 
-http://straw.ryanwalker.us/about
-
-Comments and critiques about these benchmarks are greatly appreciated!
+http://blog.ryanwalker.us/2015/11/building-streaming-search-platform.html
 
 This project was inspired by the following excellent blog posts on streaming search: 
 - http://www.confluent.io/blog/real-time-full-text-search-with-luwak-and-samza/
